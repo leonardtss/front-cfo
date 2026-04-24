@@ -82,7 +82,12 @@ export default function SignUpPage() {
     setError('');
     try {
       await signUp.create({ emailAddress: email, password });
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+
+      const { error: sendError } = await signUp.verifications.sendEmailCode();
+      if (sendError) {
+        setError(sendError.longMessage || sendError.message || 'Something went wrong.');
+        return;
+      }
 
       localStorage.setItem('pending_profile', JSON.stringify({
         firstName, lastName,
@@ -104,9 +109,13 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-      if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId });
+      const { error: verifyError } = await signUp.verifications.verifyEmailCode({ code });
+      if (verifyError) {
+        setError(verifyError.longMessage || verifyError.message || 'Invalid code.');
+        return;
+      }
+      if (signUp.status === 'complete') {
+        await setActive({ session: signUp.createdSessionId });
         navigate('/home');
       }
     } catch (err) {

@@ -8,7 +8,8 @@
       "Bash(npm run *)",
       "Bash(npm install *)",
       "WebFetch(domain:clerk.com)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(grep -r \"prepareEmailAddress\\\\|attemptEmailAddress\" /Users/leonardtorossian/cfo-black/front/node_modules/@clerk/types/dist/*.d.ts)"
     ]
   }
 }
