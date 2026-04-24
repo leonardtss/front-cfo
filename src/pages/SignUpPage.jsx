@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSignUp } from '@clerk/react';
+import { useClerk } from '@clerk/react';
 import { useNavigate, Link } from 'react-router-dom';
 import { T } from '../tokens';
 
@@ -44,7 +44,7 @@ function TextInput({ label, error, ...props }) {
 }
 
 export default function SignUpPage() {
-  const { signUp, setActive } = useSignUp();
+  const clerk = useClerk();
   const navigate = useNavigate();
 
   const [step, setStep] = useState('form'); // 'form' | 'verify'
@@ -81,13 +81,9 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
     try {
-      await signUp.create({ emailAddress: email, password });
-
-      const { error: sendError } = await signUp.verifications.sendEmailCode();
-      if (sendError) {
-        setError(sendError.longMessage || sendError.message || 'Something went wrong.');
-        return;
-      }
+      const su = clerk.client.signUp;
+      await su.create({ emailAddress: email, password });
+      await su.prepareEmailAddressVerification({ strategy: 'email_code' });
 
       localStorage.setItem('pending_profile', JSON.stringify({
         firstName, lastName,
@@ -109,17 +105,14 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
     try {
-      const { error: verifyError } = await signUp.verifications.verifyEmailCode({ code });
-      if (verifyError) {
-        setError(verifyError.longMessage || verifyError.message || 'Invalid code.');
-        return;
-      }
-      if (signUp.status === 'complete') {
-        await setActive({ session: signUp.createdSessionId });
+      const su = clerk.client.signUp;
+      const result = await su.attemptEmailAddressVerification({ code });
+      if (result.status === 'complete') {
+        await clerk.setActive({ session: result.createdSessionId });
         navigate('/home');
       }
     } catch (err) {
-      setError(err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || 'Invalid code.');
+      setError(err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message || 'Invalid code.');
     } finally {
       setLoading(false);
     }
