@@ -193,9 +193,6 @@ export default function SignUpPage() {
                 </label>
               </Field>
 
-              {/* Clerk injects Turnstile here automatically */}
-              <div id="clerk-captcha" />
-
               <button type="submit" disabled={loading}
                 style={{
                   width: '100%', padding: '13px', borderRadius: 8, border: 'none',
