@@ -1,4 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
+import { UserButton, useUser } from '@clerk/react';
+import { Link } from 'react-router-dom';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap, BtnPrimary, scrollTo } from './shared';
@@ -7,6 +9,7 @@ export default function Nav() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
   const [scrolled, setScrolled] = useState(false);
+  const { isSignedIn } = useUser();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
@@ -30,7 +33,7 @@ export default function Nav() {
       transition: 'background 300ms, border-color 300ms',
     }}>
       <Wrap style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <svg width="14" height="20" viewBox="0 0 14 20" fill="none">
             <rect x="0" y="0" width="2.5" height="20" rx="1.25" fill={A.bright} />
             <rect x="0" y="0" width="8" height="2.5" rx="1.25" fill={A.bright} />
@@ -39,7 +42,7 @@ export default function Nav() {
           <span style={{ fontFamily: T.sans, fontSize: 15, fontWeight: 500, color: T.fg0, letterSpacing: '-0.2px' }}>
             CFO Black
           </span>
-        </a>
+        </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           {links.map(([label, id]) => (
@@ -54,7 +57,30 @@ export default function Nav() {
               {label}
             </a>
           ))}
-          <BtnPrimary onClick={() => scrollTo('access-form')}>Request access</BtnPrimary>
+
+          {isSignedIn ? (
+            <UserButton appearance={{ elements: { avatarBox: { width: 34, height: 34 } } }} />
+          ) : (
+            <>
+              <Link to="/sign-in" style={{ textDecoration: 'none' }}>
+                <button style={{
+                  fontFamily: T.sans, fontSize: 14, fontWeight: 400,
+                  padding: '10px 20px', borderRadius: 8,
+                  background: 'transparent', color: T.fg1,
+                  border: `1px solid ${T.border1}`, cursor: 'pointer',
+                  transition: 'border-color 150ms, color 150ms', letterSpacing: '-0.1px',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.color = T.fg0; e.currentTarget.style.borderColor = T.border2; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = T.fg1; e.currentTarget.style.borderColor = T.border1; }}
+                >
+                  Se connecter
+                </button>
+              </Link>
+              <Link to="/sign-up" style={{ textDecoration: 'none' }}>
+                <BtnPrimary>Demander l'accès</BtnPrimary>
+              </Link>
+            </>
+          )}
         </div>
       </Wrap>
     </nav>
