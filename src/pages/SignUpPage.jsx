@@ -81,8 +81,8 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
     try {
-      await signUp.create({ emailAddress: email, password });
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      const attempt = await signUp.create({ emailAddress: email, password });
+      await attempt.prepareEmailAddressVerification({ strategy: 'email_code' });
 
       localStorage.setItem('pending_profile', JSON.stringify({
         firstName, lastName,
@@ -92,7 +92,7 @@ export default function SignUpPage() {
 
       setStep('verify');
     } catch (err) {
-      setError(err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || 'Something went wrong.');
+      setError(err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message || 'Something went wrong.');
     } finally {
       setLoading(false);
     }
