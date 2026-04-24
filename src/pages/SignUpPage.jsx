@@ -81,8 +81,8 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
     try {
-      const attempt = await signUp.create({ emailAddress: email, password });
-      await attempt.prepareEmailAddressVerification({ strategy: 'email_code' });
+      await signUp.create({ emailAddress: email, password });
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
       localStorage.setItem('pending_profile', JSON.stringify({
         firstName, lastName,
