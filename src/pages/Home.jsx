@@ -1,11 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useUser, useAuth, UserButton } from '@clerk/react';
+import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
 
 export default function Home() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [xeroStatus, setXeroStatus] = useState(null); // null | 'connected' | 'error'
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const xero = searchParams.get('xero');
+    if (xero) {
+      setXeroStatus(xero);
+      setSearchParams({}, { replace: true });
+    }
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -45,7 +57,7 @@ export default function Home() {
       }
     }
 
-    syncProfile();
+    syncProfile().finally(() => setLoading(false));
   }, [user?.id]);
 
   const firstName = profile?.firstName || user?.firstName || user?.username || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'toi';
@@ -87,40 +99,92 @@ export default function Home() {
         justifyContent: 'center',
         padding: '48px',
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            fontFamily: T.sans,
-            fontSize: 11,
-            color: T.greenText,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            marginBottom: 20,
-          }}>
-            Dashboard
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
+              <circle cx="16" cy="16" r="13" stroke={T.border1} strokeWidth="2.5" />
+              <path d="M16 3 A13 13 0 0 1 29 16" stroke={T.greenBright} strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
-          <h1 style={{
-            fontFamily: T.serif,
-            fontSize: 'clamp(40px,5vw,72px)',
-            fontWeight: 600,
-            lineHeight: 1.05,
-            letterSpacing: '-2px',
-            color: T.fg0,
-            marginBottom: 16,
-          }}>
-            Hello, {firstName}.
-          </h1>
-          <p style={{
-            fontFamily: T.sans,
-            fontSize: 17,
-            lineHeight: 1.7,
-            color: T.fg1,
-            fontWeight: 300,
-            maxWidth: 480,
-            margin: '0 auto',
-          }}>
-            Your CFO Black workspace is being set up. Check back soon.
-          </p>
-        </div>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontFamily: T.sans,
+              fontSize: 11,
+              color: T.greenText,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              marginBottom: 20,
+            }}>
+              Dashboard
+            </div>
+            <h1 style={{
+              fontFamily: T.serif,
+              fontSize: 'clamp(40px,5vw,72px)',
+              fontWeight: 600,
+              lineHeight: 1.05,
+              letterSpacing: '-2px',
+              color: T.fg0,
+              marginBottom: 16,
+            }}>
+              Hello, {firstName}.
+            </h1>
+            <p style={{
+              fontFamily: T.sans,
+              fontSize: 17,
+              lineHeight: 1.7,
+              color: T.fg1,
+              fontWeight: 300,
+              maxWidth: 480,
+              margin: '0 auto 40px',
+            }}>
+              Your CFO Black workspace is being set up. Check back soon.
+            </p>
+
+            {/* Xero */}
+            {xeroStatus === 'connected' ? (
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '11px 20px', borderRadius: 8, border: `1px solid ${T.greenBright}40`,
+                background: `${T.greenBright}0d`,
+                fontFamily: T.sans, fontSize: 14, color: T.greenText,
+              }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7l3.5 3.5L12 3.5" stroke={T.greenBright} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Xero connected
+              </div>
+            ) : (
+              <>
+                {xeroStatus === 'error' && (
+                  <p style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', marginBottom: 12 }}>
+                    Xero connection failed. Please try again.
+                  </p>
+                )}
+                <button
+                  onClick={() => { window.location.href = `${import.meta.env.VITE_API_URL}/api/xero/login?clerkUserId=${user?.id}`; }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 10,
+                    padding: '11px 20px', borderRadius: 8, border: `1px solid ${T.border1}`,
+                    background: T.bg1, cursor: 'pointer',
+                    fontFamily: T.sans, fontSize: 14, color: T.fg0, fontWeight: 400,
+                    transition: 'border-color 150ms',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = T.border2}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = T.border1}
+                >
+                  <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="20" fill="#13B5EA" />
+                    <path d="M11 20l5.5 5.5L22 20l-5.5-5.5L11 20z" fill="white" />
+                    <path d="M29 20l-5.5-5.5L18 20l5.5 5.5L29 20z" fill="white" />
+                  </svg>
+                  Connect Xero
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
