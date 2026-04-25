@@ -73,11 +73,11 @@ export default function Nav() {
                   onMouseEnter={e => { e.currentTarget.style.color = T.fg0; e.currentTarget.style.borderColor = T.border2; }}
                   onMouseLeave={e => { e.currentTarget.style.color = T.fg1; e.currentTarget.style.borderColor = T.border1; }}
                 >
-                  Se connecter
+                  Sign in
                 </button>
               </Link>
               <Link to="/sign-up" style={{ textDecoration: 'none' }}>
-                <BtnPrimary>Demander l'accès</BtnPrimary>
+                <BtnPrimary>Create an account</BtnPrimary>
               </Link>
             </>
           )}

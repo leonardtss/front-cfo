@@ -20,6 +20,7 @@ const clerkAppearance = {
   elements: {
     rootBox: {
       width: '100%',
+      maxWidth: '480px',
     },
     card: {
       background: T.bg1,
@@ -93,6 +94,9 @@ const clerkAppearance = {
       color: T.fg0,
       borderRadius: '8px',
     },
+    providerIcon__apple: {
+      filter: 'invert(1)',
+    },
   },
 };
 
@@ -122,6 +126,15 @@ export default function SignInPage() {
         forceRedirectUrl="/home"
         signUpUrl="/sign-up"
         appearance={clerkAppearance}
+        localization={{
+          signIn: {
+            start: {
+              actionText: "Don't have an account?",
+              actionLink: 'Create an account',
+              actionLink__join_waitlist: 'Create an account',
+            },
+          },
+        }}
       />
     </div>
   );
