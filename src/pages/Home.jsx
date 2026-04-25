@@ -1,11 +1,21 @@
+import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/react';
 import { UserButton } from '@clerk/react';
 import { T } from '../tokens';
 
 export default function Home() {
   const { user } = useUser();
+  const [profile, setProfile] = useState(null);
 
-  const firstName = user?.firstName || user?.username || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'toi';
+  useEffect(() => {
+    if (!user?.id) return;
+    fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setProfile(data); })
+      .catch(() => {});
+  }, [user?.id]);
+
+  const firstName = profile?.firstName || user?.firstName || user?.username || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'toi';
 
   return (
     <div style={{

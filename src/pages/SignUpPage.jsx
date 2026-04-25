@@ -109,6 +109,19 @@ export default function SignUpPage() {
       const result = await su.attemptEmailAddressVerification({ code });
       if (result.status === 'complete') {
         await clerk.setActive({ session: result.createdSessionId });
+
+        const pending = JSON.parse(localStorage.getItem('pending_profile') || '{}');
+        if (pending.firstName) {
+          try {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ clerkUserId: result.createdUserId, ...pending }),
+            });
+          } catch (_) { /* non-bloquant */ }
+          localStorage.removeItem('pending_profile');
+        }
+
         navigate('/home');
       }
     } catch (err) {
