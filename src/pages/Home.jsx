@@ -1,18 +1,51 @@
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/react';
-import { UserButton } from '@clerk/react';
+import { useUser, useAuth, UserButton } from '@clerk/react';
 import { T } from '../tokens';
 
 export default function Home() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     if (!user?.id) return;
-    fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setProfile(data); })
-      .catch(() => {});
+
+    async function syncProfile() {
+      const token = await getToken();
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+
+      const pending = JSON.parse(localStorage.getItem('pending_profile') || 'null');
+      if (pending?.firstName) {
+        try {
+          const r = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ clerkUserId: user.id, ...pending }),
+          });
+          if (r.ok) {
+            localStorage.removeItem('pending_profile');
+            setProfile(await r.json());
+          } else {
+            console.error('[CFO] POST /api/users failed:', await r.text());
+          }
+        } catch (err) {
+          console.error('[CFO] POST /api/users error:', err);
+        }
+        return;
+      }
+
+      try {
+        const r = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}`, { headers });
+        if (r.ok) setProfile(await r.json());
+      } catch (err) {
+        console.error('[CFO] GET /api/users error:', err);
+      }
+    }
+
+    syncProfile();
   }, [user?.id]);
 
   const firstName = profile?.firstName || user?.firstName || user?.username || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'toi';
