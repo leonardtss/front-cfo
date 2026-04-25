@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
+import BankAccounts from '../components/BankAccounts';
 
 export default function Home() {
   const { user } = useUser();
@@ -144,16 +145,19 @@ export default function Home() {
 
             {/* Xero */}
             {xeroStatus === 'connected' ? (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '11px 20px', borderRadius: 8, border: `1px solid ${T.greenBright}40`,
-                background: `${T.greenBright}0d`,
-                fontFamily: T.sans, fontSize: 14, color: T.greenText,
-              }}>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7l3.5 3.5L12 3.5" stroke={T.greenBright} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Xero connected
+              <div style={{ marginBottom: 32 }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '11px 20px', borderRadius: 8, border: `1px solid ${T.greenBright}40`,
+                  background: `${T.greenBright}0d`,
+                  fontFamily: T.sans, fontSize: 14, color: T.greenText, marginBottom: 40,
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 7l3.5 3.5L12 3.5" stroke={T.greenBright} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Xero connected
+                </div>
+                <BankAccounts />
               </div>
             ) : (
               <>
