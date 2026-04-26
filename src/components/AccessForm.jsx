@@ -2,12 +2,14 @@ import { useContext, useState } from 'react';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap, BtnPrimary } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 export default function AccessForm() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', tools: '' });
+  const isMobile = useMedia('(max-width: 767px)');
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -27,9 +29,9 @@ export default function AccessForm() {
   };
 
   return (
-    <section id="access-form" style={{ padding: '140px 0', background: T.bg1, borderTop: `1px solid ${T.border0}` }}>
+    <section id="access-form" style={{ padding: isMobile ? '80px 0' : '140px 0', background: T.bg1, borderTop: `1px solid ${T.border0}` }}>
       <Wrap style={{ maxWidth: 580 }}>
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <h2 style={{
             fontFamily: T.serif, fontSize: 'clamp(28px,4vw,54px)', fontWeight: 600,
             lineHeight: 1.05, letterSpacing: '-1.5px', color: T.fg0, marginBottom: 18,
@@ -65,7 +67,7 @@ export default function AccessForm() {
           </div>
         ) : (
           <form onSubmit={e => { e.preventDefault(); setSubmitted(true); }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={{ display: 'block', fontFamily: T.sans, fontSize: 12, color: T.fg2, marginBottom: 7 }}>Name</label>
                 <input
@@ -109,7 +111,7 @@ export default function AccessForm() {
               <BtnPrimary size="lg">Request early access →</BtnPrimary>
             </div>
             <p style={{ textAlign: 'center', fontFamily: T.sans, fontSize: 12, color: T.fg2, marginTop: 4 }}>
-              Invite only. We review every application personally.
+              Early access. We review every application personally.
             </p>
           </form>
         )}

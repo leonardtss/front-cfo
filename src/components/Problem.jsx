@@ -1,5 +1,6 @@
 import { T } from '../tokens';
 import { Wrap } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 const PAINS = [
   {
@@ -21,10 +22,12 @@ const PAINS = [
 ];
 
 export default function Problem() {
+  const isMobile = useMedia('(max-width: 767px)');
+
   return (
-    <section id="how-it-works" style={{ padding: '128px 0' }}>
+    <section id="how-it-works" style={{ padding: isMobile ? '72px 0' : '128px 0' }}>
       <Wrap>
-        <div style={{ maxWidth: 700, marginBottom: 64 }}>
+        <div style={{ maxWidth: 700, marginBottom: 48 }}>
           <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 18 }}>
             The problem
           </div>
@@ -42,15 +45,15 @@ export default function Problem() {
         </div>
 
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
           gap: 1, background: T.border0, borderRadius: 12, overflow: 'hidden',
         }}>
           {PAINS.map((p, i) => (
             <div
               key={i}
               style={{
-                background: T.bg0, padding: '36px 32px',
-                borderBottom: i < 2 ? `1px solid ${T.border0}` : 'none',
+                background: T.bg0, padding: isMobile ? '28px 24px' : '36px 32px',
               }}
             >
               <div style={{ fontFamily: T.serif, fontSize: 19, fontStyle: 'italic', color: T.fg0, lineHeight: 1.4, marginBottom: 14 }}>

@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 const FOR = [
   "You have multiple entities — LLCs, trusts, holdcos — and no single tool sees all of them",
@@ -19,11 +20,12 @@ const NOT_FOR = [
 export default function WhoItsFor() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
+  const isMobile = useMedia('(max-width: 767px)');
 
   return (
-    <section style={{ padding: '128px 0' }}>
+    <section style={{ padding: isMobile ? '72px 0' : '128px 0' }}>
       <Wrap>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <h2 style={{
             fontFamily: T.serif, fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 600,
             lineHeight: 1.05, letterSpacing: '-1.2px', color: T.fg0,
@@ -33,11 +35,12 @@ export default function WhoItsFor() {
         </div>
 
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
           gap: 1, background: T.border0, borderRadius: 12, overflow: 'hidden',
           maxWidth: 920, margin: '0 auto',
         }}>
-          <div style={{ background: T.bg0, padding: '44px 40px' }}>
+          <div style={{ background: T.bg0, padding: isMobile ? '32px 24px' : '44px 40px' }}>
             <div style={{ fontFamily: T.sans, fontSize: 11, color: A.text, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 22 }}>
               Built for you if…
             </div>
@@ -49,7 +52,7 @@ export default function WhoItsFor() {
             ))}
           </div>
 
-          <div style={{ background: T.bg1, padding: '44px 40px' }}>
+          <div style={{ background: T.bg1, padding: isMobile ? '32px 24px' : '44px 40px' }}>
             <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 22 }}>
               Probably not for you if…
             </div>

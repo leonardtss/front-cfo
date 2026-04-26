@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 const CLASSES = [
   'Public equity & options',
@@ -25,11 +26,17 @@ export default function AssetClasses() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
   const [hov, setHov] = useState(null);
+  const isMobile = useMedia('(max-width: 767px)');
 
   return (
-    <section style={{ padding: '128px 0', background: T.bg1, borderTop: `1px solid ${T.border0}` }}>
+    <section style={{ padding: isMobile ? '72px 0' : '128px 0', background: T.bg1, borderTop: `1px solid ${T.border0}` }}>
       <Wrap>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? 40 : 80,
+          alignItems: 'start',
+        }}>
           <div>
             <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 18 }}>
               Built for complexity

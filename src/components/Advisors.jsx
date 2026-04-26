@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 const ADVISORS = [
   { label: 'CPA / tax advisor', note: 'Shared tax workspace' },
@@ -13,13 +14,19 @@ const ADVISORS = [
 export default function Advisors() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
+  const isMobile = useMedia('(max-width: 767px)');
 
   return (
-    <section style={{ padding: '128px 0', borderTop: `1px solid ${T.border0}` }}>
+    <section style={{ padding: isMobile ? '72px 0' : '128px 0', borderTop: `1px solid ${T.border0}` }}>
       <Wrap>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 88, alignItems: 'center' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? 48 : 88,
+          alignItems: 'center',
+        }}>
           {/* Diagram */}
-          <div style={{ background: T.bg2, border: `1px solid ${T.border1}`, borderRadius: 16, padding: '40px 36px' }}>
+          <div style={{ background: T.bg2, border: `1px solid ${T.border1}`, borderRadius: 16, padding: isMobile ? '32px 24px' : '40px 36px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
               <div style={{
                 background: A.base, borderRadius: 10, padding: '14px 28px', textAlign: 'center',

@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 const MESSAGES = [
   { role: 'user', text: "If I sell my Acme shares this quarter, what's my tax hit across all entities?" },
@@ -13,11 +14,17 @@ const MESSAGES = [
 export default function AISection() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
+  const isMobile = useMedia('(max-width: 767px)');
 
   return (
-    <section style={{ padding: '140px 0' }}>
+    <section style={{ padding: isMobile ? '72px 0' : '140px 0' }}>
       <Wrap>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 88, alignItems: 'center' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? 48 : 88,
+          alignItems: 'center',
+        }}>
           <div>
             <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 18 }}>
               AI co-pilot

@@ -1,5 +1,6 @@
 import { T } from '../tokens';
 import { Wrap } from './shared';
+import { useMedia } from '../hooks/useMedia';
 
 const PILLARS = [
   {
@@ -20,25 +21,34 @@ const PILLARS = [
 ];
 
 export default function Pillars() {
+  const isMobile = useMedia('(max-width: 767px)');
+
   return (
     <section
       id="what-we-handle"
       style={{
-        padding: '128px 0',
+        padding: isMobile ? '72px 0' : '128px 0',
         background: T.bg1,
         borderTop: `1px solid ${T.border0}`,
         borderBottom: `1px solid ${T.border0}`,
       }}
     >
       <Wrap>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0 }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)',
+          gap: 0,
+        }}>
           {PILLARS.map((p, i) => (
             <div
               key={i}
               style={{
-                borderRight: i < 2 ? `1px solid ${T.border1}` : 'none',
-                paddingRight: i < 2 ? 48 : 0,
-                paddingLeft: i > 0 ? 48 : 0,
+                borderRight: !isMobile && i < 2 ? `1px solid ${T.border1}` : 'none',
+                borderBottom: isMobile && i < 2 ? `1px solid ${T.border1}` : 'none',
+                paddingRight: !isMobile && i < 2 ? 48 : 0,
+                paddingLeft: !isMobile && i > 0 ? 48 : 0,
+                paddingBottom: isMobile && i < 2 ? 40 : 0,
+                paddingTop: isMobile && i > 0 ? 40 : 0,
               }}
             >
               <div style={{ fontFamily: T.mono, fontSize: 11, color: T.fg2, letterSpacing: '0.12em', marginBottom: 22 }}>
