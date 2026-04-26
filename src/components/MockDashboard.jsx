@@ -166,7 +166,9 @@ function Sparkline({ data, color, width = 80, height = 28 }) {
 
 // ── Radar Chart ─────────────────────────────────────────────────────────────
 function RadarChart({ data, color, size = 110 }) {
-  const cx = size / 2, cy = size / 2, r = size * 0.38;
+  const pad = 22; // padding for labels
+  const vb = size + pad * 2;
+  const cx = vb / 2, cy = vb / 2, r = size * 0.38;
   const n = data.length;
   const angle = (i) => (i / n) * 2 * Math.PI - Math.PI / 2;
 
@@ -183,9 +185,10 @@ function RadarChart({ data, color, size = 110 }) {
 
   const outerPts = polyPoints(data.map(() => 1));
   const dataPts  = polyPoints(data);
+  const labels   = ['Liquid.', 'Divers.', 'Tax eff.', 'Growth', 'Income', 'Risk'];
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} style={{ display: 'block' }}>
+    <svg viewBox={`0 0 ${vb} ${vb}`} width={size} height={size} style={{ display: 'block' }}>
       {/* Grid rings */}
       {gridLevels.map(l => (
         <polygon key={l}
@@ -205,15 +208,15 @@ function RadarChart({ data, color, size = 110 }) {
         <circle key={i} cx={pt[0]} cy={pt[1]} r="2.5" fill={color} />
       ))}
       {/* Labels */}
-      {data.map((_, i) => {
+      {labels.map((label, i) => {
         const a = angle(i);
-        const lx = cx + (r + 10) * Math.cos(a);
-        const ly = cy + (r + 10) * Math.sin(a);
-        const labels = ['Liquid.', 'Divers.', 'Tax eff.', 'Growth', 'Income', 'Risk'];
+        const lx = cx + (r + 14) * Math.cos(a);
+        const ly = cy + (r + 14) * Math.sin(a);
+        const anchor = Math.cos(a) > 0.1 ? 'start' : Math.cos(a) < -0.1 ? 'end' : 'middle';
         return (
-          <text key={i} x={lx} y={ly + 3} textAnchor="middle"
-            fontFamily={T.sans} fontSize="7.5" fill="rgba(240,237,228,0.4)">
-            {labels[i]}
+          <text key={i} x={lx} y={ly + 3} textAnchor={anchor}
+            fontFamily={T.sans} fontSize="8" fill="rgba(240,237,228,0.45)">
+            {label}
           </text>
         );
       })}
@@ -441,7 +444,7 @@ export default function MockDashboard() {
 
       {/* Bottom fade */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
         background: `linear-gradient(to bottom, transparent, ${T.bg0})`, pointerEvents: 'none',
       }} />
     </div>
