@@ -1,10 +1,12 @@
 import { useContext, useState } from 'react';
 import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
+import { useMedia } from '../hooks/useMedia';
 
 export function Wrap({ children, style }) {
+  const isMobile = useMedia('(max-width: 767px)');
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 48px', ...style }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '0 20px' : '0 48px', ...style }}>
       {children}
     </div>
   );

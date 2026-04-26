@@ -147,7 +147,7 @@ export default function SignUpPage() {
               Create your account
             </h1>
             <p style={{ fontFamily: T.sans, fontSize: 14, color: T.fg2, marginBottom: 32, fontWeight: 300 }}>
-              Invite only · Early access.
+              Early access — free during beta.
             </p>
 
             {error && (
