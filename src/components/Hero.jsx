@@ -3,6 +3,7 @@ import { TweaksCtx } from '../context';
 import { T, getAccentTokens } from '../tokens';
 import { Wrap, Tag, BtnPrimary, BtnGhost, scrollTo } from './shared';
 import MockDashboard from './MockDashboard';
+import { useMedia } from '../hooks/useMedia';
 
 const TAGLINES = [
   'Your wealth deserves more than a dashboard.',
@@ -15,6 +16,7 @@ export default function Hero() {
   const A = getAccentTokens(accent);
   const [active, setActive] = useState(taglineIdx);
   const [visible, setVisible] = useState(true);
+  const isMobile = useMedia('(max-width: 767px)');
 
   useEffect(() => { setActive(taglineIdx); }, [taglineIdx]);
 
@@ -84,7 +86,7 @@ export default function Hero() {
           <BtnGhost size="lg" onClick={() => scrollTo('how-it-works')}>See how it works</BtnGhost>
         </div>
 
-        {showDashboard && <MockDashboard />}
+        {showDashboard && !isMobile && <MockDashboard />}
       </Wrap>
     </section>
   );
