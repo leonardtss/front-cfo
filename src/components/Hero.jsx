@@ -32,7 +32,7 @@ export default function Hero() {
   }, [carouselActive]);
 
   return (
-    <section style={{ paddingTop: 168, paddingBottom: 100, position: 'relative', overflow: 'hidden' }}>
+    <section style={{ paddingTop: isMobile ? 96 : 128, paddingBottom: isMobile ? 64 : 100, position: 'relative', overflow: 'hidden' }}>
       {/* Ambient glow */}
       <div style={{
         position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)',
@@ -47,14 +47,20 @@ export default function Hero() {
         </div>
 
         <div className="fade-up fade-up-2" style={{ marginTop: 28 }}>
-          <h1 style={{
-            fontFamily: T.serif, fontSize: 'clamp(46px,6vw,82px)', fontWeight: 600,
-            lineHeight: 1.0, letterSpacing: '-2.5px', color: T.fg0,
-            maxWidth: 820, margin: '0 auto',
-            opacity: visible ? 1 : 0, transition: 'opacity 300ms ease',
+          {/* Fixed-height wrapper prevents layout shift between taglines */}
+          <div style={{
+            minHeight: isMobile ? 'calc(clamp(46px,6vw,82px) * 3.2)' : 'calc(clamp(46px,6vw,82px) * 1.1)',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
           }}>
-            {TAGLINES[active]}
-          </h1>
+            <h1 style={{
+              fontFamily: T.serif, fontSize: 'clamp(46px,6vw,82px)', fontWeight: 600,
+              lineHeight: 1.05, letterSpacing: '-2.5px', color: T.fg0,
+              maxWidth: 820, margin: 0,
+              opacity: visible ? 1 : 0, transition: 'opacity 300ms ease',
+            }}>
+              {TAGLINES[active]}
+            </h1>
+          </div>
 
           {carouselActive && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 18 }}>
