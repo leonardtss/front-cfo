@@ -442,9 +442,9 @@ export default function MockDashboard() {
         </div>
       </div>
 
-      {/* Bottom fade */}
+      {/* Bottom fade — kept short so it doesn't overlap card content */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 20,
         background: `linear-gradient(to bottom, transparent, ${T.bg0})`, pointerEvents: 'none',
       }} />
     </div>
