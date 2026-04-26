@@ -410,7 +410,7 @@ export default function MockDashboard() {
 
             {/* AI insight with typewriter */}
             <div style={{
-              background: 'rgba(18,22,18,0.95)', border: `1px solid ${A.bright}55`,
+              background: T.bg3, border: `1px solid ${A.bright}`,
               borderRadius: 8, padding: '11px 14px', display: 'flex', gap: 10, alignItems: 'flex-start',
             }}>
               <div style={{
