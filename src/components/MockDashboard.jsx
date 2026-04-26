@@ -164,6 +164,63 @@ function Sparkline({ data, color, width = 80, height = 28 }) {
   );
 }
 
+// ── Radar Chart ─────────────────────────────────────────────────────────────
+function RadarChart({ data, color, size = 110 }) {
+  const cx = size / 2, cy = size / 2, r = size * 0.38;
+  const n = data.length;
+  const angle = (i) => (i / n) * 2 * Math.PI - Math.PI / 2;
+
+  const gridLevels = [0.33, 0.66, 1];
+
+  const polyPoints = (vals, scale = 1) =>
+    vals.map((v, i) => {
+      const a = angle(i);
+      const d = v * r * scale;
+      return [cx + d * Math.cos(a), cy + d * Math.sin(a)];
+    });
+
+  const toStr = pts => pts.map(p => p.join(',')).join(' ');
+
+  const outerPts = polyPoints(data.map(() => 1));
+  const dataPts  = polyPoints(data);
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} style={{ display: 'block' }}>
+      {/* Grid rings */}
+      {gridLevels.map(l => (
+        <polygon key={l}
+          points={toStr(polyPoints(data.map(() => 1), l))}
+          fill="none" stroke={T.border0} strokeWidth="0.8" />
+      ))}
+      {/* Axis lines */}
+      {outerPts.map((pt, i) => (
+        <line key={i} x1={cx} y1={cy} x2={pt[0]} y2={pt[1]}
+          stroke={T.border0} strokeWidth="0.8" />
+      ))}
+      {/* Data polygon */}
+      <polygon points={toStr(dataPts)}
+        fill={color} fillOpacity="0.18" stroke={color} strokeWidth="1.5" />
+      {/* Data dots */}
+      {dataPts.map((pt, i) => (
+        <circle key={i} cx={pt[0]} cy={pt[1]} r="2.5" fill={color} />
+      ))}
+      {/* Labels */}
+      {data.map((_, i) => {
+        const a = angle(i);
+        const lx = cx + (r + 10) * Math.cos(a);
+        const ly = cy + (r + 10) * Math.sin(a);
+        const labels = ['Liquid.', 'Divers.', 'Tax eff.', 'Growth', 'Income', 'Risk'];
+        return (
+          <text key={i} x={lx} y={ly + 3} textAnchor="middle"
+            fontFamily={T.sans} fontSize="7.5" fill="rgba(240,237,228,0.4)">
+            {labels[i]}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 export default function MockDashboard() {
   const { accent } = useContext(TweaksCtx);
@@ -307,8 +364,8 @@ export default function MockDashboard() {
               <AreaChart data={NW} dataPrev={NW_PREV} color={A.bright} colorPrev={T.fg2} id="nw" />
             </div>
 
-            {/* Bottom row: metrics + bar chart */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {/* Bottom row: metrics + bar chart + radar */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
               {/* Metric cards with sparklines */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {metrics.map(m => (
@@ -339,26 +396,41 @@ export default function MockDashboard() {
                   <span style={{ fontFamily: T.mono, fontSize: 11, color: A.text }}>+16.6%</span>
                 </div>
               </div>
+
+              {/* Radar chart: portfolio health */}
+              <div style={{
+                background: T.bg1, borderRadius: 7, padding: '10px 12px',
+                border: `1px solid ${T.border0}`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+              }}>
+                <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, marginBottom: 6, alignSelf: 'flex-start' }}>Portfolio health</div>
+                <RadarChart data={[0.62, 0.85, 0.74, 0.90, 0.68, 0.55]} color={A.bright} />
+              </div>
             </div>
 
             {/* AI insight with typewriter */}
             <div style={{
-              background: A.pale, border: `1px solid ${A.bright}25`,
-              borderRadius: 8, padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'flex-start',
+              background: 'rgba(18,22,18,0.95)', border: `1px solid ${A.bright}55`,
+              borderRadius: 8, padding: '11px 14px', display: 'flex', gap: 10, alignItems: 'flex-start',
             }}>
               <div style={{
-                width: 6, height: 6, borderRadius: '50%', background: A.bright,
-                marginTop: 5, flexShrink: 0,
+                width: 7, height: 7, borderRadius: '50%', background: A.bright,
+                marginTop: 4, flexShrink: 0,
+                boxShadow: `0 0 6px ${A.bright}`,
                 animation: aiTyping ? 'pulse 0.6s ease-in-out infinite' : 'pulse 2s ease-in-out infinite',
               }} />
-              <div>
-                <div style={{ fontFamily: T.sans, fontSize: 10, color: A.text, fontWeight: 500, marginBottom: 3, letterSpacing: '0.04em' }}>
-                  AI insight
-                  {aiTyping && <span style={{ marginLeft: 6, opacity: 0.5 }}>analyzing…</span>}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <span style={{ fontFamily: T.sans, fontSize: 10, color: A.bright, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    AI insight
+                  </span>
+                  {aiTyping && (
+                    <span style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2, letterSpacing: '0.04em' }}>analyzing…</span>
+                  )}
                 </div>
-                <div style={{ fontFamily: T.sans, fontSize: 12, color: T.fg1, lineHeight: 1.55 }}>
+                <div style={{ fontFamily: T.sans, fontSize: 12.5, color: T.fg0, lineHeight: 1.6 }}>
                   {aiMsg || ' '}
-                  {aiTyping && <span style={{ animation: 'pulse 0.7s ease-in-out infinite', marginLeft: 1 }}>▋</span>}
+                  {aiTyping && <span style={{ animation: 'pulse 0.7s ease-in-out infinite', color: A.bright }}>▋</span>}
                 </div>
               </div>
             </div>
