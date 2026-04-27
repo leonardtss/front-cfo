@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
 import XeroOrgs from '../components/XeroOrgs';
 import XeroBilan from '../components/XeroBilan';
+import XeroRaw from '../components/XeroRaw';
 
 export default function Home() {
   const { user } = useUser();
@@ -11,6 +12,7 @@ export default function Home() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [xeroStatus, setXeroStatus] = useState(null); // null | 'connected' | 'error'
+  const [xeroTenants, setXeroTenants] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -150,9 +152,12 @@ export default function Home() {
                 Xero connection failed. Please try again.
               </p>
             )}
-            <XeroOrgs clerkUserId={user?.id} />
+            <XeroOrgs clerkUserId={user?.id} onTenantsLoaded={setXeroTenants} />
             <div style={{ marginTop: 32 }}>
               <XeroBilan clerkUserId={user?.id} />
+            </div>
+            <div style={{ marginTop: 32 }}>
+              <XeroRaw clerkUserId={user?.id} tenants={xeroTenants} />
             </div>
           </div>
         )}

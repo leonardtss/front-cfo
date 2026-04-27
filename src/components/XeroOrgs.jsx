@@ -4,7 +4,7 @@ import { T } from '../tokens';
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function XeroOrgs({ clerkUserId }) {
+export default function XeroOrgs({ clerkUserId, onTenantsLoaded }) {
   const { getToken } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,9 @@ export default function XeroOrgs({ clerkUserId }) {
         });
         if (r.ok) {
           const data = await r.json();
-          setTenants(data.tenants || []);
+          const list = data.tenants || [];
+          setTenants(list);
+          onTenantsLoaded?.(list);
         }
       } catch (err) {
         console.error('[XeroOrgs] fetch error:', err);
