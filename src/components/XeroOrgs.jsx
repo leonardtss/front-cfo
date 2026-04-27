@@ -8,6 +8,7 @@ export default function XeroOrgs({ clerkUserId }) {
   const { getToken } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
     if (!clerkUserId) return;
@@ -30,11 +31,13 @@ export default function XeroOrgs({ clerkUserId }) {
     fetchTenants();
   }, [clerkUserId]);
 
-  const connectMore = () => {
+  const startOAuth = () => {
     window.location.href = `${API}/api/xero/login?clerkUserId=${clerkUserId}`;
   };
 
   if (loading) return null;
+
+  const hasOrgs = tenants.length > 0;
 
   return (
     <div style={{
@@ -49,7 +52,6 @@ export default function XeroOrgs({ clerkUserId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Xero logo */}
           <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="20" fill="#13B5EA" />
             <path d="M11 20l5.5 5.5L22 20l-5.5-5.5L11 20z" fill="white" />
@@ -59,22 +61,20 @@ export default function XeroOrgs({ clerkUserId }) {
             Xero organisations
           </span>
         </div>
-        <span style={{
-          fontFamily: T.sans, fontSize: 11, color: T.fg2,
-          background: T.bg2, border: `1px solid ${T.border0}`,
-          padding: '2px 8px', borderRadius: 99,
-        }}>
-          {tenants.length} connectée{tenants.length !== 1 ? 's' : ''}
-        </span>
+        {hasOrgs && (
+          <span style={{
+            fontFamily: T.sans, fontSize: 11, color: T.greenText,
+            background: `${T.greenBright}12`, border: `1px solid ${T.greenBright}30`,
+            padding: '2px 8px', borderRadius: 99,
+          }}>
+            {tenants.length} connectée{tenants.length !== 1 ? 's' : ''}
+          </span>
+        )}
       </div>
 
       {/* Tenant list */}
-      {tenants.length === 0 ? (
-        <p style={{ fontFamily: T.sans, fontSize: 13, color: T.fg2, marginBottom: 16 }}>
-          Aucune organisation connectée.
-        </p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+      {hasOrgs && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
           {tenants.map(t => (
             <div key={t.tenantId} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -95,7 +95,10 @@ export default function XeroOrgs({ clerkUserId }) {
                 </svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{
+                  fontFamily: T.sans, fontSize: 13, color: T.fg0,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
                   {t.tenantName || t.tenantId}
                 </div>
                 {t.tenantType && (
@@ -109,9 +112,57 @@ export default function XeroOrgs({ clerkUserId }) {
         </div>
       )}
 
-      {/* Connect more button */}
+      {/* Instructions (collapsible si orgs déjà connectées) */}
+      {(!hasOrgs || showInstructions) && (
+        <div style={{
+          background: T.bg2, border: `1px solid ${T.border0}`,
+          borderRadius: 8, padding: '12px 14px', marginBottom: 14,
+        }}>
+          <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, marginBottom: 8, fontWeight: 500 }}>
+            Comment connecter plusieurs organisations
+          </div>
+          {[
+            'Cliquez sur "Connect Xero" ci-dessous',
+            'Sur la page Xero, sélectionnez une organisation dans le menu déroulant',
+            'Cliquez à nouveau sur le menu pour en sélectionner une autre — répétez pour chaque entité',
+            'Une fois toutes vos entités ajoutées, cliquez "Allow access"',
+            'Répétez ce process si vous avez raté des entités',
+          ].map((step, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, marginBottom: i < 4 ? 7 : 0, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                background: T.bg0, border: `1px solid ${T.border1}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: T.mono, fontSize: 9, color: T.fg2, marginTop: 1,
+              }}>
+                {i + 1}
+              </div>
+              <p style={{ fontFamily: T.sans, fontSize: 12, color: T.fg1, lineHeight: 1.5, margin: 0 }}>
+                {step}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Toggle instructions si orgs déjà là */}
+      {hasOrgs && !showInstructions && (
+        <button
+          onClick={() => setShowInstructions(true)}
+          style={{
+            display: 'block', fontFamily: T.sans, fontSize: 11, color: T.fg2,
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: 0, marginBottom: 12, textDecoration: 'underline',
+            textDecorationColor: T.border1,
+          }}
+        >
+          Comment ajouter d'autres organisations ?
+        </button>
+      )}
+
+      {/* Connect button */}
       <button
-        onClick={connectMore}
+        onClick={startOAuth}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           padding: '9px 0', borderRadius: 8,
@@ -125,7 +176,7 @@ export default function XeroOrgs({ clerkUserId }) {
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-        {tenants.length === 0 ? 'Connect Xero' : 'Connect more organisations'}
+        {hasOrgs ? 'Connecter une autre organisation' : 'Connect Xero'}
       </button>
     </div>
   );
