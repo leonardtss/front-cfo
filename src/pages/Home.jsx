@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
-import BankAccounts from '../components/BankAccounts';
 import XeroOrgs from '../components/XeroOrgs';
+import XeroBilan from '../components/XeroBilan';
 
 export default function Home() {
   const { user } = useUser();
@@ -151,7 +151,9 @@ export default function Home() {
               </p>
             )}
             <XeroOrgs clerkUserId={user?.id} />
-            <BankAccounts />
+            <div style={{ marginTop: 32 }}>
+              <XeroBilan clerkUserId={user?.id} />
+            </div>
           </div>
         )}
       </main>
