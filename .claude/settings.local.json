@@ -11,7 +11,9 @@
       "Bash(node *)",
       "Bash(grep -r \"prepareEmailAddress\\\\|attemptEmailAddress\" /Users/leonardtorossian/cfo-black/front/node_modules/@clerk/types/dist/*.d.ts)",
       "Bash(ls /Users/leonardtorossian/cfo-black/front/Capture*)",
-      "Bash(ls /Users/leonardtorossian/cfo-black/front/*.png)"
+      "Bash(ls /Users/leonardtorossian/cfo-black/front/*.png)",
+      "Bash(curl -s \"https://api.basiq.io/reference/createuser\")",
+      "Bash(python3 *)"
     ]
   }
 }
