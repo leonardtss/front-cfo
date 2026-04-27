@@ -153,10 +153,13 @@ function KPI({ label, value, sub, color, positive }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function XeroDashboard({ clerkUserId }) {
   const { getToken } = useAuth();
-  const [data, setData]         = useState(null);
-  const [history, setHistory]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
+  const [data, setData]             = useState(null);
+  const [history, setHistory]       = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
+  const [activeEntities, setActiveEntities] = useState(null);
+  const [periodMonths, setPeriodMonths]     = useState(12);
+  const [normalize, setNormalize]           = useState(false);
 
   useEffect(() => {
     if (!clerkUserId) return;
@@ -207,13 +210,8 @@ export default function XeroDashboard({ clerkUserId }) {
     </div>
   );
 
-  const { aggregated, entities, asOf, period } = data;
-
-  // Chart state
+  const { aggregated, entities, asOf, period } = data || {};
   const validHistory = (history || []).filter(h => h.equity?.length > 1);
-  const [activeEntities, setActiveEntities] = useState(null); // null = tous actifs
-  const [periodMonths, setPeriodMonths]     = useState(12);
-  const [normalize, setNormalize]           = useState(false);
 
   const toggleEntity = (id) => {
     const current = activeEntities ?? validHistory.map(h => h.tenantId);
