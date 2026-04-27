@@ -157,7 +157,7 @@ export default function Home() {
               label="Connecter une org. Xero"
             />
             <SidebarConnectBtn
-              onClick={async () => {
+              onClick={() => {
                 const email = user?.emailAddresses?.[0]?.emailAddress || '';
                 window.location.href = `${API}/api/basiq/connect/${user?.id}?email=${encodeURIComponent(email)}`;
               }}

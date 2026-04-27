@@ -135,8 +135,8 @@ function TxRow({ tx }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function BasiqAccounts({ clerkUserId }) {
-  const { getToken }  = useAuth();
-  const { user }      = useUser();
+  const { getToken } = useAuth();
+  const { user }     = useUser();
   const [data, setData]           = useState(null);
   const [loading, setLoading]     = useState(true);
   const [connecting, setConnecting] = useState(false);
@@ -169,9 +169,8 @@ export default function BasiqAccounts({ clerkUserId }) {
     setConnecting(true);
     try {
       const token = await getToken();
-      const email = user?.emailAddresses?.[0]?.emailAddress || '';
       const r = await fetch(
-        `${API}/api/basiq/connect/${clerkUserId}?email=${encodeURIComponent(email)}`,
+        `${API}/api/basiq/connect/${clerkUserId}?email=${encodeURIComponent(user?.emailAddresses?.[0]?.emailAddress || '')}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!r.ok) throw new Error(await r.text());
