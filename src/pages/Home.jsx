@@ -2,166 +2,240 @@ import { useState, useEffect } from 'react';
 import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
-import XeroOrgs from '../components/XeroOrgs';
 import XeroDashboard from '../components/XeroDashboard';
-import XeroRaw from '../components/XeroRaw';
+import XeroOrgDetail from '../components/XeroOrgDetail';
+import XeroOrgs     from '../components/XeroOrgs';
+
+const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
+const API = import.meta.env.VITE_API_URL;
+
+function Spinner() {
+  return (
+    <>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
+        <circle cx="14" cy="14" r="11" stroke={T.border1} strokeWidth="2.5" />
+        <path d="M14 3 A11 11 0 0 1 25 14" stroke={T.greenBright} strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    </>
+  );
+}
 
 export default function Home() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [xeroStatus, setXeroStatus] = useState(null); // null | 'connected' | 'error'
-  const [xeroTenants, setXeroTenants] = useState([]);
+  const { user }       = useUser();
+  const { getToken }   = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const [profile, setProfile]       = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [xeroStatus, setXeroStatus] = useState(null);
+  const [tenants, setTenants]       = useState([]);
+  const [page, setPage]             = useState('overview'); // 'overview' | tenantId
+
+  // Lire ?xero= au retour du callback
   useEffect(() => {
     const xero = searchParams.get('xero');
-    if (xero) {
-      setXeroStatus(xero);
-      setSearchParams({}, { replace: true });
-    }
+    if (xero) { setXeroStatus(xero); setSearchParams({}, { replace: true }); }
   }, []);
 
+  // Sync profil
   useEffect(() => {
     if (!user?.id) return;
-
-    async function syncProfile() {
+    (async () => {
       const token = await getToken();
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      };
-
+      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
       const pending = JSON.parse(localStorage.getItem('pending_profile') || 'null');
       if (pending?.firstName) {
         try {
-          const r = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ clerkUserId: user.id, ...pending }),
-          });
-          if (r.ok) {
-            localStorage.removeItem('pending_profile');
-            setProfile(await r.json());
-          } else {
-            console.error('[CFO] POST /api/users failed:', await r.text());
-          }
-        } catch (err) {
-          console.error('[CFO] POST /api/users error:', err);
-        }
-        return;
+          const r = await fetch(`${API}/api/users`, { method: 'POST', headers, body: JSON.stringify({ clerkUserId: user.id, ...pending }) });
+          if (r.ok) { localStorage.removeItem('pending_profile'); setProfile(await r.json()); }
+        } catch {}
+        setLoading(false); return;
       }
-
       try {
-        const r = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}`, { headers });
+        const r = await fetch(`${API}/api/users/${user.id}`, { headers });
         if (r.ok) setProfile(await r.json());
-      } catch (err) {
-        console.error('[CFO] GET /api/users error:', err);
-      }
-    }
-
-    syncProfile().finally(() => setLoading(false));
+      } catch {}
+      setLoading(false);
+    })();
   }, [user?.id]);
 
-  const firstName = profile?.firstName || user?.firstName || user?.username || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'toi';
+  const firstName = profile?.firstName || user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || '';
+
+  const selectedTenant = tenants.find(t => t.tenantId === page);
 
   return (
-    <div style={{
-      minHeight: '100svh',
-      background: T.bg0,
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      {/* Header */}
+    <div style={{ minHeight: '100svh', background: T.bg0, display: 'flex', flexDirection: 'column' }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* Top bar */}
       <header style={{
-        borderBottom: `1px solid ${T.border0}`,
-        padding: '0 48px',
-        height: 64,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        borderBottom: `1px solid ${T.border0}`, height: 56,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <svg width="14" height="20" viewBox="0 0 14 20" fill="none">
-            <rect x="0" y="0" width="2.5" height="20" rx="1.25" fill={T.greenBright} />
-            <rect x="0" y="0" width="8" height="2.5" rx="1.25" fill={T.greenBright} />
-            <rect x="0" y="17.5" width="8" height="2.5" rx="1.25" fill={T.greenBright} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <svg width="12" height="18" viewBox="0 0 12 18" fill="none">
+            <rect x="0" y="0" width="2.2" height="18" rx="1.1" fill={T.greenBright} />
+            <rect x="0" y="0" width="7" height="2.2" rx="1.1" fill={T.greenBright} />
+            <rect x="0" y="15.8" width="7" height="2.2" rx="1.1" fill={T.greenBright} />
           </svg>
-          <span style={{ fontFamily: T.sans, fontSize: 15, fontWeight: 500, color: T.fg0, letterSpacing: '-0.2px' }}>
+          <span style={{ fontFamily: T.sans, fontSize: 14, fontWeight: 500, color: T.fg0, letterSpacing: '-0.2px' }}>
             CFO Black
           </span>
         </div>
-        <UserButton appearance={{ elements: { avatarBox: { width: 34, height: 34 } } }} />
+        <UserButton appearance={{ elements: { avatarBox: { width: 30, height: 30 } } }} />
       </header>
 
-      {/* Content */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px',
-      }}>
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
-              <circle cx="16" cy="16" r="13" stroke={T.border1} strokeWidth="2.5" />
-              <path d="M16 3 A13 13 0 0 1 29 16" stroke={T.greenBright} strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{
-              fontFamily: T.sans,
-              fontSize: 11,
-              color: T.greenText,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              marginBottom: 20,
-            }}>
-              Dashboard
-            </div>
-            <h1 style={{
-              fontFamily: T.serif,
-              fontSize: 'clamp(40px,5vw,72px)',
-              fontWeight: 600,
-              lineHeight: 1.05,
-              letterSpacing: '-2px',
-              color: T.fg0,
-              marginBottom: 16,
-            }}>
-              Hello, {firstName}.
-            </h1>
-            <p style={{
-              fontFamily: T.sans,
-              fontSize: 17,
-              lineHeight: 1.7,
-              color: T.fg1,
-              fontWeight: 300,
-              maxWidth: 480,
-              margin: '0 auto 40px',
-            }}>
-              Your CFO Black workspace is being set up. Check back soon.
-            </p>
+      {/* Body */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-            {/* Xero */}
-            {xeroStatus === 'error' && (
-              <p style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', marginBottom: 12 }}>
-                Xero connection failed. Please try again.
-              </p>
-            )}
-            <XeroOrgs clerkUserId={user?.id} onTenantsLoaded={setXeroTenants} />
-            <div style={{ marginTop: 32 }}>
-              <XeroDashboard clerkUserId={user?.id} />
-            </div>
-            <div style={{ marginTop: 32 }}>
-              <XeroRaw clerkUserId={user?.id} tenants={xeroTenants} />
+        {/* Sidebar */}
+        <aside style={{
+          width: 220, flexShrink: 0,
+          background: T.bg1, borderRight: `1px solid ${T.border0}`,
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto',
+        }}>
+          {/* Greeting */}
+          <div style={{ padding: '20px 16px 14px', borderBottom: `1px solid ${T.border0}` }}>
+            <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, marginBottom: 2 }}>Bonjour,</div>
+            <div style={{ fontFamily: T.serif, fontSize: 17, color: T.fg0, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+              {firstName || '—'}
             </div>
           </div>
-        )}
-      </main>
+
+          {/* Nav */}
+          <nav style={{ padding: '10px 0', flex: 1 }}>
+            {/* Overview */}
+            <NavItem
+              label="Vue d'ensemble"
+              icon={<GridIcon />}
+              active={page === 'overview'}
+              onClick={() => setPage('overview')}
+            />
+
+            {/* Organisations */}
+            {tenants.length > 0 && (
+              <>
+                <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  Organisations
+                </div>
+                {tenants.map((t, i) => (
+                  <NavItem
+                    key={t.tenantId}
+                    label={t.tenantName}
+                    dot={ENTITY_COLORS[i % ENTITY_COLORS.length]}
+                    active={page === t.tenantId}
+                    onClick={() => setPage(t.tenantId)}
+                  />
+                ))}
+              </>
+            )}
+          </nav>
+
+          {/* Bottom: connect Xero */}
+          <div style={{ padding: '12px 16px', borderTop: `1px solid ${T.border0}` }}>
+            <button
+              onClick={() => { window.location.href = `${API}/api/xero/login?clerkUserId=${user?.id}`; }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+                fontFamily: T.sans, fontSize: 11, color: T.fg2,
+                background: 'none', border: `1px solid ${T.border0}`,
+                borderRadius: 7, padding: '7px 10px', cursor: 'pointer',
+                transition: 'border-color 150ms, color 150ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = T.border1; e.currentTarget.style.color = T.fg1; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = T.border0; e.currentTarget.style.color = T.fg2; }}
+            >
+              <XeroLogo size={14} />
+              Connecter une org.
+            </button>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: '32px 36px' }}>
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 80 }}><Spinner /></div>
+          ) : !user?.id ? null : (
+            <>
+              {xeroStatus === 'error' && (
+                <div style={{ fontFamily: T.sans, fontSize: 12, color: '#e05555', marginBottom: 16 }}>
+                  Connexion Xero échouée. Réessayez.
+                </div>
+              )}
+
+              {/* Fetch tenants silently */}
+              <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} hidden />
+
+              {tenants.length === 0 ? (
+                /* Pas encore connecté */
+                <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
+                  <div style={{ fontFamily: T.serif, fontSize: 28, color: T.fg0, letterSpacing: '-0.8px', marginBottom: 10 }}>
+                    Connectez Xero pour commencer.
+                  </div>
+                  <p style={{ fontFamily: T.sans, fontSize: 14, color: T.fg1, lineHeight: 1.65, fontWeight: 300, marginBottom: 28 }}>
+                    CFO Black agrège vos données financières en temps réel depuis toutes vos entités Xero.
+                  </p>
+                  <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} />
+                </div>
+              ) : page === 'overview' ? (
+                <XeroDashboard clerkUserId={user.id} tenants={tenants} />
+              ) : selectedTenant ? (
+                <XeroOrgDetail
+                  clerkUserId={user.id}
+                  tenant={selectedTenant}
+                  color={ENTITY_COLORS[tenants.indexOf(selectedTenant) % ENTITY_COLORS.length]}
+                />
+              ) : null}
+            </>
+          )}
+        </main>
+      </div>
     </div>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+function NavItem({ label, icon, dot, active, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      width: '100%', display: 'flex', alignItems: 'center', gap: 9,
+      padding: '7px 16px', background: active ? 'rgba(240,237,228,0.05)' : 'transparent',
+      borderLeft: active ? `2px solid ${T.greenBright}` : '2px solid transparent',
+      border: 'none', borderRadius: 0, cursor: 'pointer',
+      fontFamily: T.sans, fontSize: 12,
+      color: active ? T.fg0 : T.fg2,
+      textAlign: 'left', transition: 'color 120ms',
+    }}
+    onMouseEnter={e => !active && (e.currentTarget.style.color = T.fg1)}
+    onMouseLeave={e => !active && (e.currentTarget.style.color = T.fg2)}
+    >
+      {icon}
+      {dot && <div style={{ width: 7, height: 7, borderRadius: 2, background: dot, flexShrink: 0 }} />}
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+    </button>
+  );
+}
+
+function GridIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0 }}>
+      <rect x="0" y="0" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.6" />
+      <rect x="7.5" y="0" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.6" />
+      <rect x="0" y="7.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.6" />
+      <rect x="7.5" y="7.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.6" />
+    </svg>
+  );
+}
+
+function XeroLogo({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" style={{ flexShrink: 0 }}>
+      <circle cx="20" cy="20" r="20" fill="#13B5EA" />
+      <path d="M11 20l5.5 5.5L22 20l-5.5-5.5L11 20z" fill="white" />
+      <path d="M29 20l-5.5-5.5L18 20l5.5 5.5L29 20z" fill="white" />
+    </svg>
   );
 }

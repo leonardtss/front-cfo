@@ -4,7 +4,7 @@ import { T } from '../tokens';
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function XeroOrgs({ clerkUserId, onTenantsLoaded }) {
+export default function XeroOrgs({ clerkUserId, onTenantsLoaded, hidden }) {
   const { getToken } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,7 @@ export default function XeroOrgs({ clerkUserId, onTenantsLoaded }) {
   };
 
   if (loading) return null;
+  if (hidden) return null;
 
   const hasOrgs = tenants.length > 0;
 
