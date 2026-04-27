@@ -3,7 +3,7 @@ import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
 import XeroOrgs from '../components/XeroOrgs';
-import XeroBilan from '../components/XeroBilan';
+import XeroDashboard from '../components/XeroDashboard';
 import XeroRaw from '../components/XeroRaw';
 
 export default function Home() {
@@ -154,7 +154,7 @@ export default function Home() {
             )}
             <XeroOrgs clerkUserId={user?.id} onTenantsLoaded={setXeroTenants} />
             <div style={{ marginTop: 32 }}>
-              <XeroBilan clerkUserId={user?.id} />
+              <XeroDashboard clerkUserId={user?.id} />
             </div>
             <div style={{ marginTop: 32 }}>
               <XeroRaw clerkUserId={user?.id} tenants={xeroTenants} />
