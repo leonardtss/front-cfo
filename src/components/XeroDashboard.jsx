@@ -6,6 +6,87 @@ const API = import.meta.env.VITE_API_URL;
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 
+// ── Multi-line chart ──────────────────────────────────────────────────────────
+function smoothPath(pts) {
+  if (pts.length < 2) return '';
+  let d = `M ${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+    const dx = (x1 - x0) / 3;
+    d += ` C ${x0+dx},${y0} ${x1-dx},${y1} ${x1},${y1}`;
+  }
+  return d;
+}
+
+function MultiLineChart({ series, width = 660, height = 160 }) {
+  // series: [{ label, color, values: number[] }]
+  if (!series?.length || !series[0]?.values?.length) return null;
+
+  const n      = series[0].values.length;
+  const allVals = series.flatMap(s => s.values).filter(v => !isNaN(v));
+  const minV   = Math.min(...allVals);
+  const maxV   = Math.max(...allVals);
+  const range  = maxV - minV || 1;
+  const padT = 12, padB = 24, padL = 0, padR = 0;
+
+  const toX = i => padL + (i / (n - 1)) * (width - padL - padR);
+  const toY = v => padT + (1 - (v - minV) / range) * (height - padT - padB);
+
+  // Y axis labels
+  const yTicks = [minV, minV + range * 0.5, maxV].map(v => ({
+    y: toY(v), label: fmt(v),
+  }));
+
+  // X axis: show up to 6 labels evenly spaced
+  const months   = series[0].months || series[0].values.map((_, i) => `M${i + 1}`);
+  const xStep    = Math.max(1, Math.floor(n / 6));
+  const xLabels  = months.map((m, i) => ({ x: toX(i), label: m, show: i % xStep === 0 || i === n - 1 }));
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ display: 'block', overflow: 'visible' }}>
+      {/* Grid */}
+      {yTicks.map((t, i) => (
+        <line key={i} x1={0} y1={t.y} x2={width} y2={t.y}
+          stroke={T.border0} strokeWidth="1" strokeDasharray="3,5" />
+      ))}
+
+      {/* Y labels */}
+      {yTicks.map((t, i) => (
+        <text key={i} x={4} y={t.y - 3}
+          fontFamily={T.mono} fontSize="8" fill="rgba(240,237,228,0.25)">{t.label}</text>
+      ))}
+
+      {/* Series */}
+      {series.map((s, si) => {
+        const pts = s.values.map((v, i) => [toX(i), toY(v)]);
+        const line = smoothPath(pts);
+        const area = `${line} L ${toX(n-1)},${height - padB} L ${toX(0)},${height - padB} Z`;
+        const uid  = `ml-${si}`;
+        return (
+          <g key={si}>
+            <defs>
+              <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor={s.color} stopOpacity="0.18" />
+                <stop offset="100%" stopColor={s.color} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={area} fill={`url(#${uid})`} />
+            <path d={line} fill="none" stroke={s.color} strokeWidth="1.6" strokeLinecap="round" />
+            {/* Last dot */}
+            <circle cx={toX(n-1)} cy={toY(s.values[n-1])} r="3" fill={s.color} />
+          </g>
+        );
+      })}
+
+      {/* X labels */}
+      {xLabels.filter(l => l.show).map((l, i) => (
+        <text key={i} x={l.x} y={height - 6} textAnchor="middle"
+          fontFamily={T.sans} fontSize="8" fill="rgba(240,237,228,0.28)">{l.label}</text>
+      ))}
+    </svg>
+  );
+}
+
 function fmt(val, compact = true) {
   if (val == null || isNaN(val)) return '—';
   if (compact && Math.abs(val) >= 1_000_000)
@@ -75,21 +156,27 @@ function KPI({ label, value, sub, color, positive }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function XeroDashboard({ clerkUserId }) {
   const { getToken } = useAuth();
-  const [data, setData]       = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [data, setData]         = useState(null);
+  const [history, setHistory]   = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
 
   useEffect(() => {
     if (!clerkUserId) return;
     (async () => {
       try {
         const token = await getToken();
-        const r = await fetch(`${API}/api/xero/dashboard/${clerkUserId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (r.status === 401) { setError('reauth'); return; }
-        if (!r.ok) throw new Error(await r.text());
-        setData(await r.json());
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [dashRes, histRes] = await Promise.all([
+          fetch(`${API}/api/xero/dashboard/${clerkUserId}`, { headers }),
+          fetch(`${API}/api/xero/history/${clerkUserId}`,   { headers }),
+        ]);
+
+        if (dashRes.status === 401) { setError('reauth'); return; }
+        if (!dashRes.ok) throw new Error(await dashRes.text());
+        setData(await dashRes.json());
+        if (histRes.ok) setHistory(await histRes.json());
       } catch (e) {
         setError(e.message);
       } finally {
@@ -169,6 +256,38 @@ export default function XeroDashboard({ clerkUserId }) {
         <KPI label="Profit net" value={aggregated.netProfit}
           color={aggregated.netProfit >= 0 ? T.greenText : '#ef5350'} />
       </div>
+
+      {/* Multi-line chart — Net Worth par entité sur 12 mois */}
+      {history?.some(h => h.equity?.length > 1) && (
+        <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              Net Worth par entité — 12 mois
+            </div>
+            <div style={{ display: 'flex', gap: 14 }}>
+              {history.filter(h => h.equity?.length > 1).map((h, i) => (
+                <div key={h.tenantId} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div style={{ width: 16, height: 2, background: ENTITY_COLORS[i % ENTITY_COLORS.length], borderRadius: 1 }} />
+                  <span style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2 }}>
+                    {h.tenantName?.split(' ').slice(0, 2).join(' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <MultiLineChart
+            series={history
+              .filter(h => h.equity?.length > 1)
+              .map((h, i) => ({
+                label:  h.tenantName,
+                color:  ENTITY_COLORS[i % ENTITY_COLORS.length],
+                values: h.equity,
+                months: h.months,
+              }))
+            }
+          />
+        </div>
+      )}
 
       {/* Donut + entités */}
       <div style={{
