@@ -3,6 +3,7 @@ import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
 import BankAccounts from '../components/BankAccounts';
+import XeroOrgs from '../components/XeroOrgs';
 
 export default function Home() {
   const { user } = useUser();
@@ -144,49 +145,13 @@ export default function Home() {
             </p>
 
             {/* Xero */}
-            {xeroStatus === 'connected' ? (
-              <div style={{ marginBottom: 32 }}>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '11px 20px', borderRadius: 8, border: `1px solid ${T.greenBright}40`,
-                  background: `${T.greenBright}0d`,
-                  fontFamily: T.sans, fontSize: 14, color: T.greenText, marginBottom: 40,
-                }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 7l3.5 3.5L12 3.5" stroke={T.greenBright} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Xero connected
-                </div>
-                <BankAccounts />
-              </div>
-            ) : (
-              <>
-                {xeroStatus === 'error' && (
-                  <p style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', marginBottom: 12 }}>
-                    Xero connection failed. Please try again.
-                  </p>
-                )}
-                <button
-                  onClick={() => { window.location.href = `${import.meta.env.VITE_API_URL}/api/xero/login?clerkUserId=${user?.id}`; }}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 10,
-                    padding: '11px 20px', borderRadius: 8, border: `1px solid ${T.border1}`,
-                    background: T.bg1, cursor: 'pointer',
-                    fontFamily: T.sans, fontSize: 14, color: T.fg0, fontWeight: 400,
-                    transition: 'border-color 150ms',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = T.border2}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = T.border1}
-                >
-                  <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
-                    <circle cx="20" cy="20" r="20" fill="#13B5EA" />
-                    <path d="M11 20l5.5 5.5L22 20l-5.5-5.5L11 20z" fill="white" />
-                    <path d="M29 20l-5.5-5.5L18 20l5.5 5.5L29 20z" fill="white" />
-                  </svg>
-                  Connect Xero
-                </button>
-              </>
+            {xeroStatus === 'error' && (
+              <p style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', marginBottom: 12 }}>
+                Xero connection failed. Please try again.
+              </p>
             )}
+            <XeroOrgs clerkUserId={user?.id} />
+            <BankAccounts />
           </div>
         )}
       </main>

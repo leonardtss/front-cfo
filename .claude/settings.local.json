@@ -9,7 +9,9 @@
       "Bash(npm install *)",
       "WebFetch(domain:clerk.com)",
       "Bash(node *)",
-      "Bash(grep -r \"prepareEmailAddress\\\\|attemptEmailAddress\" /Users/leonardtorossian/cfo-black/front/node_modules/@clerk/types/dist/*.d.ts)"
+      "Bash(grep -r \"prepareEmailAddress\\\\|attemptEmailAddress\" /Users/leonardtorossian/cfo-black/front/node_modules/@clerk/types/dist/*.d.ts)",
+      "Bash(ls /Users/leonardtorossian/cfo-black/front/Capture*)",
+      "Bash(ls /Users/leonardtorossian/cfo-black/front/*.png)"
     ]
   }
 }
