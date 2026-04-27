@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
 import { T } from '../tokens';
-import XeroDashboard from '../components/XeroDashboard';
-import XeroOrgDetail from '../components/XeroOrgDetail';
-import XeroOrgs     from '../components/XeroOrgs';
+import XeroDashboard   from '../components/XeroDashboard';
+import XeroOrgDetail   from '../components/XeroOrgDetail';
+import XeroOrgs        from '../components/XeroOrgs';
+import BasiqAccounts   from '../components/BasiqAccounts';
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 const API = import.meta.env.VITE_API_URL;
@@ -30,12 +31,15 @@ export default function Home() {
   const [loading, setLoading]       = useState(true);
   const [xeroStatus, setXeroStatus] = useState(null);
   const [tenants, setTenants]       = useState([]);
-  const [page, setPage]             = useState('overview'); // 'overview' | tenantId
+  const [page, setPage]             = useState('overview'); // 'overview' | 'banks' | tenantId
 
-  // Lire ?xero= au retour du callback
+  // Lire ?xero= et ?basiq= au retour des callbacks OAuth
   useEffect(() => {
-    const xero = searchParams.get('xero');
-    if (xero) { setXeroStatus(xero); setSearchParams({}, { replace: true }); }
+    const xero  = searchParams.get('xero');
+    const basiq = searchParams.get('basiq');
+    if (xero)  { setXeroStatus(xero); }
+    if (basiq === 'connected') { setPage('banks'); }
+    if (xero || basiq) setSearchParams({}, { replace: true });
   }, []);
 
   // Sync profil
@@ -115,6 +119,17 @@ export default function Home() {
               onClick={() => setPage('overview')}
             />
 
+            {/* Banques */}
+            <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Banques
+            </div>
+            <NavItem
+              label="Comptes bancaires"
+              icon={<BankIcon />}
+              active={page === 'banks'}
+              onClick={() => setPage('banks')}
+            />
+
             {/* Organisations */}
             {tenants.length > 0 && (
               <>
@@ -134,23 +149,21 @@ export default function Home() {
             )}
           </nav>
 
-          {/* Bottom: connect Xero */}
-          <div style={{ padding: '12px 16px', borderTop: `1px solid ${T.border0}` }}>
-            <button
+          {/* Bottom: connect buttons */}
+          <div style={{ padding: '12px 16px', borderTop: `1px solid ${T.border0}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <SidebarConnectBtn
               onClick={() => { window.location.href = `${API}/api/xero/login?clerkUserId=${user?.id}`; }}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
-                fontFamily: T.sans, fontSize: 11, color: T.fg2,
-                background: 'none', border: `1px solid ${T.border0}`,
-                borderRadius: 7, padding: '7px 10px', cursor: 'pointer',
-                transition: 'border-color 150ms, color 150ms',
+              icon={<XeroLogo size={14} />}
+              label="Connecter une org. Xero"
+            />
+            <SidebarConnectBtn
+              onClick={async () => {
+                const email = user?.emailAddresses?.[0]?.emailAddress || '';
+                window.location.href = `${API}/api/basiq/connect/${user?.id}?email=${encodeURIComponent(email)}`;
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = T.border1; e.currentTarget.style.color = T.fg1; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = T.border0; e.currentTarget.style.color = T.fg2; }}
-            >
-              <XeroLogo size={14} />
-              Connecter une org.
-            </button>
+              icon={<BankIcon size={13} />}
+              label="Connecter une banque"
+            />
           </div>
         </aside>
 
@@ -169,8 +182,10 @@ export default function Home() {
               {/* Fetch tenants silently */}
               <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} hidden />
 
-              {tenants.length === 0 ? (
-                /* Pas encore connecté */
+              {page === 'banks' ? (
+                <BasiqAccounts clerkUserId={user.id} />
+              ) : tenants.length === 0 ? (
+                /* Pas encore connecté à Xero */
                 <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
                   <div style={{ fontFamily: T.serif, fontSize: 28, color: T.fg0, letterSpacing: '-0.8px', marginBottom: 10 }}>
                     Connectez Xero pour commencer.
@@ -237,5 +252,37 @@ function XeroLogo({ size = 16 }) {
       <path d="M11 20l5.5 5.5L22 20l-5.5-5.5L11 20z" fill="white" />
       <path d="M29 20l-5.5-5.5L18 20l5.5 5.5L29 20z" fill="white" />
     </svg>
+  );
+}
+
+function BankIcon({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M1 5h11M6.5 1L12 5H1L6.5 1Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+      <rect x="2" y="5" width="2" height="5" fill="currentColor" opacity="0.5"/>
+      <rect x="5.5" y="5" width="2" height="5" fill="currentColor" opacity="0.5"/>
+      <rect x="9" y="5" width="2" height="5" fill="currentColor" opacity="0.5"/>
+      <line x1="1" y1="10" x2="12" y2="10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function SidebarConnectBtn({ onClick, icon, label }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+        fontFamily: T.sans, fontSize: 11, color: T.fg2,
+        background: 'none', border: `1px solid ${T.border0}`,
+        borderRadius: 7, padding: '7px 10px', cursor: 'pointer',
+        transition: 'border-color 150ms, color 150ms',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = T.border1; e.currentTarget.style.color = T.fg1; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = T.border0; e.currentTarget.style.color = T.fg2; }}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
