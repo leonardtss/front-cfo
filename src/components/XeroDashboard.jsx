@@ -18,24 +18,21 @@ function smoothPath(pts) {
   return d;
 }
 
-function MultiLineChart({ series, width = 660, height = 160 }) {
-  // series: [{ label, color, values: number[] }]
+function MultiLineChart({ series, width = 660, height = 160, normalize = false }) {
   if (!series?.length || !series[0]?.values?.length) return null;
 
-  const n      = series[0].values.length;
+  const n       = series[0].values.length;
   const allVals = series.flatMap(s => s.values).filter(v => !isNaN(v));
-  const minV   = Math.min(...allVals);
-  const maxV   = Math.max(...allVals);
-  const range  = maxV - minV || 1;
-  const padT = 12, padB = 24, padL = 0, padR = 0;
+  const minV    = Math.min(...allVals);
+  const maxV    = Math.max(...allVals);
+  const range   = maxV - minV || 1;
+  const padT = 12, padB = 24, padL = 50, padR = 8;
 
-  const toX = i => padL + (i / (n - 1)) * (width - padL - padR);
+  const toX = i => padL + (i / Math.max(n - 1, 1)) * (width - padL - padR);
   const toY = v => padT + (1 - (v - minV) / range) * (height - padT - padB);
 
-  // Y axis labels
-  const yTicks = [minV, minV + range * 0.5, maxV].map(v => ({
-    y: toY(v), label: fmt(v),
-  }));
+  const fmtY = v => normalize ? `${v >= 0 ? '+' : ''}${v.toFixed(1)}%` : fmt(v);
+  const yTicks = [minV, minV + range * 0.5, maxV].map(v => ({ y: toY(v), label: fmtY(v) }));
 
   // X axis: show up to 6 labels evenly spaced
   const months   = series[0].months || series[0].values.map((_, i) => `M${i + 1}`);
@@ -52,8 +49,8 @@ function MultiLineChart({ series, width = 660, height = 160 }) {
 
       {/* Y labels */}
       {yTicks.map((t, i) => (
-        <text key={i} x={4} y={t.y - 3}
-          fontFamily={T.mono} fontSize="8" fill="rgba(240,237,228,0.25)">{t.label}</text>
+        <text key={i} x={padL - 4} y={t.y + 3} textAnchor="end"
+          fontFamily={T.mono} fontSize="8" fill="rgba(240,237,228,0.3)">{t.label}</text>
       ))}
 
       {/* Series */}
@@ -212,6 +209,33 @@ export default function XeroDashboard({ clerkUserId }) {
 
   const { aggregated, entities, asOf, period } = data;
 
+  // Chart state
+  const validHistory = (history || []).filter(h => h.equity?.length > 1);
+  const [activeEntities, setActiveEntities] = useState(null); // null = tous actifs
+  const [periodMonths, setPeriodMonths]     = useState(12);
+  const [normalize, setNormalize]           = useState(false);
+
+  const toggleEntity = (id) => {
+    const current = activeEntities ?? validHistory.map(h => h.tenantId);
+    const next = current.includes(id) ? current.filter(x => x !== id) : [...current, id];
+    setActiveEntities(next.length === validHistory.length ? null : next);
+  };
+
+  const isActive = (id) => !activeEntities || activeEntities.includes(id);
+
+  const chartSeries = validHistory
+    .filter(h => isActive(h.tenantId))
+    .map((h, i) => {
+      const globalIdx = validHistory.findIndex(x => x.tenantId === h.tenantId);
+      const color     = ENTITY_COLORS[globalIdx % ENTITY_COLORS.length];
+      const allVals   = h.equity.slice(-periodMonths);
+      const months    = h.months.slice(-periodMonths);
+      const values    = normalize
+        ? allVals.map(v => allVals[0] ? ((v - allVals[0]) / Math.abs(allVals[0])) * 100 : 0)
+        : allVals;
+      return { label: h.tenantName, color, values, months };
+    });
+
   // Segments pour le donut — actifs par entité
   const donutSegments = entities
     .filter(e => e.totalAssets > 0)
@@ -257,35 +281,65 @@ export default function XeroDashboard({ clerkUserId }) {
           color={aggregated.netProfit >= 0 ? T.greenText : '#ef5350'} />
       </div>
 
-      {/* Multi-line chart — Net Worth par entité sur 12 mois */}
-      {history?.some(h => h.equity?.length > 1) && (
+      {/* Multi-line chart */}
+      {validHistory.length > 0 && (
         <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-              Net Worth par entité — 12 mois
+
+          {/* Header + contrôles */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', paddingTop: 3 }}>
+              Net Worth par entité
             </div>
-            <div style={{ display: 'flex', gap: 14 }}>
-              {history.filter(h => h.equity?.length > 1).map((h, i) => (
-                <div key={h.tenantId} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <div style={{ width: 16, height: 2, background: ENTITY_COLORS[i % ENTITY_COLORS.length], borderRadius: 1 }} />
-                  <span style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2 }}>
-                    {h.tenantName?.split(' ').slice(0, 2).join(' ')}
-                  </span>
-                </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {/* Période */}
+              {[3, 6, 12].map(m => (
+                <button key={m} onClick={() => setPeriodMonths(m)} style={{
+                  fontFamily: T.sans, fontSize: 10, padding: '3px 9px', borderRadius: 4,
+                  border: `1px solid ${periodMonths === m ? T.greenBright + '60' : T.border0}`,
+                  background: periodMonths === m ? `${T.greenBright}12` : T.bg2,
+                  color: periodMonths === m ? T.greenText : T.fg2, cursor: 'pointer',
+                }}>{m}M</button>
               ))}
+              {/* Normaliser */}
+              <button onClick={() => setNormalize(n => !n)} style={{
+                fontFamily: T.sans, fontSize: 10, padding: '3px 9px', borderRadius: 4,
+                border: `1px solid ${normalize ? '#4fc3f760' : T.border0}`,
+                background: normalize ? '#4fc3f712' : T.bg2,
+                color: normalize ? '#4fc3f7' : T.fg2, cursor: 'pointer',
+              }}>% var.</button>
             </div>
           </div>
-          <MultiLineChart
-            series={history
-              .filter(h => h.equity?.length > 1)
-              .map((h, i) => ({
-                label:  h.tenantName,
-                color:  ENTITY_COLORS[i % ENTITY_COLORS.length],
-                values: h.equity,
-                months: h.months,
-              }))
-            }
-          />
+
+          {/* Toggle entités */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+            {validHistory.map((h, i) => {
+              const active = isActive(h.tenantId);
+              const color  = ENTITY_COLORS[i % ENTITY_COLORS.length];
+              return (
+                <button key={h.tenantId} onClick={() => toggleEntity(h.tenantId)} style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontFamily: T.sans, fontSize: 10, padding: '4px 10px', borderRadius: 99,
+                  border: `1px solid ${active ? color + '50' : T.border0}`,
+                  background: active ? color + '15' : T.bg2,
+                  color: active ? color : T.fg3,
+                  cursor: 'pointer', transition: 'all 150ms',
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: active ? color : T.fg3 }} />
+                  {h.tenantName?.split(' ').slice(0, 2).join(' ')}
+                  {' '}
+                  <span style={{ fontFamily: T.mono, fontSize: 9, opacity: 0.7 }}>
+                    {fmt(h.equity?.[h.equity.length - 1])}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Chart */}
+          {chartSeries.length > 0
+            ? <MultiLineChart series={chartSeries} normalize={normalize} />
+            : <div style={{ fontFamily: T.sans, fontSize: 12, color: T.fg2, textAlign: 'center', padding: '24px 0' }}>Sélectionne au moins une entité.</div>
+          }
         </div>
       )}
 
