@@ -186,6 +186,26 @@ export default function XeroRaw({ clerkUserId, tenants = [] }) {
           </div>
         )}
 
+        {data && (
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+            }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              fontFamily: T.sans, fontSize: 13, color: T.greenText,
+              background: `${T.greenBright}12`, border: `1px solid ${T.greenBright}30`,
+              padding: '8px 16px', borderRadius: 8, cursor: 'pointer', marginBottom: 10,
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <rect x="4" y="1" width="7" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+              <path d="M1 4v6a1 1 0 001 1h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
+            Copier le JSON complet
+          </button>
+        )}
+
         <button
           onClick={() => load(selectedTenant)}
           disabled={!selectedTenant || loading}
