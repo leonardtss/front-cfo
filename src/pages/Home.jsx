@@ -6,6 +6,7 @@ import XeroDashboard   from '../components/XeroDashboard';
 import XeroOrgDetail   from '../components/XeroOrgDetail';
 import XeroOrgs        from '../components/XeroOrgs';
 import BasiqAccounts   from '../components/BasiqAccounts';
+import TellerAccounts  from '../components/TellerAccounts';
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 const API = import.meta.env.VITE_API_URL;
@@ -31,14 +32,14 @@ export default function Home() {
   const [loading, setLoading]       = useState(true);
   const [xeroStatus, setXeroStatus] = useState(null);
   const [tenants, setTenants]       = useState([]);
-  const [page, setPage]             = useState('overview'); // 'overview' | 'banks' | tenantId
+  const [page, setPage]             = useState('overview'); // 'overview' | 'au-banks' | 'us-banks' | tenantId
 
   // Lire ?xero= et ?basiq= au retour des callbacks OAuth
   useEffect(() => {
     const xero  = searchParams.get('xero');
     const basiq = searchParams.get('basiq');
     if (xero)  { setXeroStatus(xero); }
-    if (basiq === 'connected') { setPage('banks'); }
+    if (basiq === 'connected') { setPage('au-banks'); }
     if (xero || basiq) setSearchParams({}, { replace: true });
   }, []);
 
@@ -121,13 +122,19 @@ export default function Home() {
 
             {/* Banques */}
             <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Banques
+              Banks
             </div>
             <NavItem
-              label="Comptes bancaires"
+              label="Australian Banks"
               icon={<BankIcon />}
-              active={page === 'banks'}
-              onClick={() => setPage('banks')}
+              active={page === 'au-banks'}
+              onClick={() => setPage('au-banks')}
+            />
+            <NavItem
+              label="US Banks"
+              icon={<BankIcon />}
+              active={page === 'us-banks'}
+              onClick={() => setPage('us-banks')}
             />
 
             {/* Organisations */}
@@ -162,7 +169,12 @@ export default function Home() {
                 window.location.href = `${API}/api/basiq/connect/${user?.id}?email=${encodeURIComponent(email)}`;
               }}
               icon={<BankIcon size={13} />}
-              label="Connecter une banque"
+              label="Australian bank"
+            />
+            <SidebarConnectBtn
+              onClick={() => setPage('us-banks')}
+              icon={<BankIcon size={13} />}
+              label="US bank"
             />
           </div>
         </aside>
@@ -182,8 +194,10 @@ export default function Home() {
               {/* Fetch tenants silently */}
               <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} hidden />
 
-              {page === 'banks' ? (
+              {page === 'au-banks' ? (
                 <BasiqAccounts clerkUserId={user.id} />
+              ) : page === 'us-banks' ? (
+                <TellerAccounts clerkUserId={user.id} />
               ) : tenants.length === 0 ? (
                 /* Pas encore connecté à Xero */
                 <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
