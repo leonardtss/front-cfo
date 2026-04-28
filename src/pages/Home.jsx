@@ -7,6 +7,7 @@ import XeroOrgDetail   from '../components/XeroOrgDetail';
 import XeroOrgs        from '../components/XeroOrgs';
 import BasiqAccounts   from '../components/BasiqAccounts';
 import TellerAccounts  from '../components/TellerAccounts';
+import BinanceAssets   from '../components/BinanceAssets';
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 const API = import.meta.env.VITE_API_URL;
@@ -137,6 +138,17 @@ export default function Home() {
               onClick={() => setPage('us-banks')}
             />
 
+            {/* Crypto */}
+            <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Crypto
+            </div>
+            <NavItem
+              label="Binance"
+              icon={<CryptoIcon />}
+              active={page === 'binance'}
+              onClick={() => setPage('binance')}
+            />
+
             {/* Organisations */}
             {tenants.length > 0 && (
               <>
@@ -198,6 +210,8 @@ export default function Home() {
                 <BasiqAccounts clerkUserId={user.id} />
               ) : page === 'us-banks' ? (
                 <TellerAccounts clerkUserId={user.id} />
+              ) : page === 'binance' ? (
+                <BinanceAssets clerkUserId={user.id} />
               ) : tenants.length === 0 ? (
                 /* Pas encore connecté à Xero */
                 <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
@@ -265,6 +279,17 @@ function XeroLogo({ size = 16 }) {
       <circle cx="20" cy="20" r="20" fill="#13B5EA" />
       <path d="M11 20l5.5 5.5L22 20l-5.5-5.5L11 20z" fill="white" />
       <path d="M29 20l-5.5-5.5L18 20l5.5 5.5L29 20z" fill="white" />
+    </svg>
+  );
+}
+
+function CryptoIcon({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0 }}>
+      <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1" opacity="0.6"/>
+      <path d="M5 4.5h2.5c.8 0 1.3.4 1.3 1s-.5 1-1.3 1H5M5 6.5h2.8c.9 0 1.4.4 1.4 1.1S8.7 8.5 7.8 8.5H5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="6.5" y1="3.5" x2="6.5" y2="4.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="6.5" y1="8.5" x2="6.5" y2="9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
     </svg>
   );
 }
