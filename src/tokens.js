@@ -22,7 +22,7 @@ export const TLight = {
   ...shared,
   bg0: '#f4f1e8', bg1: '#fdfcf8', bg2: '#edeae0', bg3: '#e4e0d5',
   cream: '#f4f1e8', creamMuted: '#e8e4d6',
-  fg0: '#1a1c1a', fg1: 'rgba(26,28,26,0.65)', fg2: 'rgba(26,28,26,0.45)', fg3: 'rgba(26,28,26,0.22)',
+  fg0: '#0f110f', fg1: 'rgba(15,17,15,0.80)', fg2: 'rgba(15,17,15,0.60)', fg3: 'rgba(15,17,15,0.38)',
   inv: '#f0ede4', inv1: 'rgba(240,237,228,0.6)',
   greenText: '#2a7a4e',
   border0: 'rgba(26,28,26,0.08)', border1: 'rgba(26,28,26,0.15)', border2: 'rgba(26,28,26,0.30)',
