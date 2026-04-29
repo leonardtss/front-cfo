@@ -2,8 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@clerk/react';
 import { T } from '../tokens';
 
-const API        = import.meta.env.VITE_API_URL;
-const TELLER_APP = import.meta.env.VITE_TELLER_APP_ID;
+const API         = import.meta.env.VITE_API_URL;
+const TELLER_APP  = import.meta.env.VITE_TELLER_APP_ID;
+const TELLER_ENV  = import.meta.env.VITE_TELLER_ENV || 'sandbox';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(val, currency = 'USD') {
@@ -60,7 +61,7 @@ function useTellerConnect(onSuccess) {
     if (!tellerRef.current) {
       tellerRef.current = window.TellerConnect.setup({
         applicationId: TELLER_APP,
-        environment:   'sandbox',
+        environment:   TELLER_ENV,
         onSuccess,
         onExit:    () => {},
         onFailure: (f) => console.error('[Teller] failure', f),
