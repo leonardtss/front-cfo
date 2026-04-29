@@ -3,7 +3,7 @@ const shared = {
   greenPale: 'rgba(82,168,116,0.12)',
   gold: '#b8923a', goldLight: '#d4aa56', goldPale: 'rgba(184,146,58,0.12)',
   navy: '#1e2d4a', navyMid: '#2a3f6a', navyBright: '#4a6fa5', navyText: '#8aabdf',
-  sans:  "'DM Sans', system-ui, sans-serif",
+  sans:  "'Inter', system-ui, sans-serif",
   serif: "'Cormorant Garamond', Georgia, serif",
   mono:  "'IBM Plex Mono', monospace",
 };
