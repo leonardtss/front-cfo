@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API         = import.meta.env.VITE_API_URL;
 const TELLER_APP  = import.meta.env.VITE_TELLER_APP_ID;
@@ -22,6 +22,7 @@ function fmtDate(raw) {
 }
 
 function Spinner({ size = 24 }) {
+  const { T } = useTheme();
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       style={{ animation: 'spin 0.8s linear infinite', display: 'block' }}>
@@ -32,6 +33,7 @@ function Spinner({ size = 24 }) {
 }
 
 function Section({ title, children }) {
+  const { T } = useTheme();
   return (
     <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
       <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
@@ -75,6 +77,7 @@ function useTellerConnect(onSuccess) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function TellerAccounts({ clerkUserId }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [data, setData]           = useState(null);
   const [loading, setLoading]     = useState(true);

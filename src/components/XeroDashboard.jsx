@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -19,6 +19,7 @@ function smoothPath(pts) {
 }
 
 function MultiLineChart({ series, width = 660, height = 160, normalize = false }) {
+  const { T } = useTheme();
   if (!series?.length || !series[0]?.values?.length) return null;
 
   const n       = series[0].values.length;
@@ -95,6 +96,7 @@ function fmt(val, compact = true) {
 
 // ── Donut SVG ─────────────────────────────────────────────────────────────────
 function Donut({ segments, size = 140, thickness = 26 }) {
+  const { T } = useTheme();
   const r   = (size - thickness) / 2;
   const cx  = size / 2, cy = size / 2;
   const circ = 2 * Math.PI * r;
@@ -131,6 +133,7 @@ function Donut({ segments, size = 140, thickness = 26 }) {
 
 // ── KPI card ─────────────────────────────────────────────────────────────────
 function KPI({ label, value, sub, color, positive }) {
+  const { T } = useTheme();
   const isPositive = positive ?? value >= 0;
   return (
     <div style={{
@@ -152,6 +155,7 @@ function KPI({ label, value, sub, color, positive }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function XeroDashboard({ clerkUserId }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [data, setData]             = useState(null);
   const [history, setHistory]       = useState(null);

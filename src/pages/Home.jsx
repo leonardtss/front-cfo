@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser, useAuth, UserButton } from '@clerk/react';
 import { useSearchParams } from 'react-router-dom';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 import XeroDashboard   from '../components/XeroDashboard';
 import XeroOrgDetail   from '../components/XeroOrgDetail';
 import XeroOrgs        from '../components/XeroOrgs';
@@ -25,6 +25,7 @@ function Spinner() {
 }
 
 export default function Home() {
+  const { T, isDark, toggle } = useTheme();
   const { user }       = useUser();
   const { getToken }   = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -90,7 +91,22 @@ export default function Home() {
             CFO Black
           </span>
         </div>
-        <UserButton appearance={{ elements: { avatarBox: { width: 30, height: 30 } } }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={toggle} title={isDark ? 'Light mode' : 'Dark mode'} style={{
+            width: 30, height: 30, borderRadius: 8, border: `1px solid ${T.border1}`,
+            background: T.bg2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: T.fg2, transition: 'all 150ms', flexShrink: 0,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = T.border2; e.currentTarget.style.color = T.fg0; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = T.border1; e.currentTarget.style.color = T.fg2; }}
+          >
+            {isDark
+              ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" strokeWidth="1.2"/><line x1="7" y1="1" x2="7" y2="2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="7" y1="11.5" x2="7" y2="13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="1" y1="7" x2="2.5" y2="7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="11.5" y1="7" x2="13" y2="7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="2.93" y1="2.93" x2="3.99" y2="3.99" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="10.01" y1="10.01" x2="11.07" y2="11.07" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="11.07" y1="2.93" x2="10.01" y2="3.99" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/><line x1="3.99" y1="10.01" x2="2.93" y2="11.07" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+              : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.5 7.5A5 5 0 0 1 6.5 2.5a5 5 0 1 0 5 5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+            }
+          </button>
+          <UserButton appearance={{ elements: { avatarBox: { width: 30, height: 30 } } }} />
+        </div>
       </header>
 
       {/* Body */}
@@ -242,10 +258,11 @@ export default function Home() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function NavItem({ label, icon, dot, active, onClick }) {
+  const { T } = useTheme();
   return (
     <button onClick={onClick} style={{
       width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-      padding: '7px 16px', background: active ? 'rgba(240,237,228,0.05)' : 'transparent',
+      padding: '7px 16px', background: active ? `${T.greenBright}08` : 'transparent',
       borderLeft: active ? `2px solid ${T.greenBright}` : '2px solid transparent',
       border: 'none', borderRadius: 0, cursor: 'pointer',
       fontFamily: T.sans, fontSize: 12,

@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useUser } from '@clerk/react'
 import './index.css'
+import { ThemeProvider } from './ThemeContext.jsx'
 import App from './App.jsx'
 import Home from './pages/Home.jsx'
 import SignInPage from './pages/SignInPage.jsx'
@@ -27,6 +28,7 @@ const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <ThemeProvider>
     <ClerkProvider
       publishableKey={publishableKey}
       signInUrl="/sign-in"
@@ -49,5 +51,6 @@ createRoot(document.getElementById('root')).render(
         </Routes>
       </BrowserRouter>
     </ClerkProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

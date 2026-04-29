@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -20,6 +20,7 @@ function fmtDate(raw) {
 }
 
 function Spinner({ size = 20 }) {
+  const { T } = useTheme();
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       style={{ animation: 'spin 0.8s linear infinite', display: 'block' }}>
@@ -31,6 +32,7 @@ function Spinner({ size = 20 }) {
 
 // ── Account card ──────────────────────────────────────────────────────────────
 function AccountCard({ account, active, onClick }) {
+  const { T } = useTheme();
   return (
     <button onClick={onClick} style={{
       width: '100%', textAlign: 'left', cursor: 'pointer',
@@ -65,6 +67,7 @@ function AccountCard({ account, active, onClick }) {
 }
 
 function AccountIcon({ type }) {
+  const { T } = useTheme();
   // savings, transaction, credit-card, loan, mortgage, investment
   if (type === 'credit-card') {
     return (
@@ -95,6 +98,7 @@ function AccountIcon({ type }) {
 
 // ── Transaction row ───────────────────────────────────────────────────────────
 function TxRow({ tx }) {
+  const { T } = useTheme();
   const isCredit = tx.direction === 'credit';
   return (
     <div style={{
@@ -135,6 +139,7 @@ function TxRow({ tx }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function BasiqAccounts({ clerkUserId }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const { user }     = useUser();
   const [data, setData]           = useState(null);

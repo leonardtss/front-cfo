@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -24,6 +24,7 @@ function fmtDate(raw) {
 }
 
 function Spinner() {
+  const { T } = useTheme();
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
       style={{ animation: 'spin 0.8s linear infinite', display: 'block' }}>
@@ -35,6 +36,7 @@ function Spinner() {
 
 // ── KPI card ──────────────────────────────────────────────────────────────────
 function KPI({ label, value, sub, color }) {
+  const { T } = useTheme();
   return (
     <div style={{
       background: T.bg1, border: `1px solid ${T.border0}`,
@@ -55,6 +57,7 @@ function KPI({ label, value, sub, color }) {
 
 // ── Horizontal bar ────────────────────────────────────────────────────────────
 function HBar({ value, max, color }) {
+  const { T } = useTheme();
   const pct = Math.min(100, max > 0 ? (Math.abs(value) / max) * 100 : 0);
   return (
     <div style={{ flex: 1, height: 5, background: T.bg2, borderRadius: 3, overflow: 'hidden' }}>
@@ -65,6 +68,7 @@ function HBar({ value, max, color }) {
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
+  const { T } = useTheme();
   const map = {
     AUTHORISED: { label: 'autorisée', color: '#ffb74d' },
     PAID:       { label: 'payée',     color: T.greenText },
@@ -85,6 +89,7 @@ function StatusBadge({ status }) {
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
 function Section({ title, children }) {
+  const { T } = useTheme();
   return (
     <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
       <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
@@ -97,6 +102,7 @@ function Section({ title, children }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [sample, setSample] = useState(null);
   const [loading, setLoading] = useState(true);

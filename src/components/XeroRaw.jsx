@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API = import.meta.env.VITE_API_URL;
 
 // ── JSON Tree ─────────────────────────────────────────────────────────────────
 function JsonNode({ label, value, depth = 0 }) {
+  const { T } = useTheme();
   const [open, setOpen] = useState(depth < 2);
   const indent = depth * 14;
 
@@ -58,6 +59,7 @@ function JsonNode({ label, value, depth = 0 }) {
 
 // ── Endpoint card ─────────────────────────────────────────────────────────────
 function EndpointCard({ name, result }) {
+  const { T } = useTheme();
   const [open, setOpen] = useState(false);
 
   const count = (() => {
@@ -114,6 +116,7 @@ function EndpointCard({ name, result }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function XeroRaw({ clerkUserId, tenants = [] }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);

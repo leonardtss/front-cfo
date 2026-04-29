@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API = import.meta.env.VITE_API_URL;
 
 export default function XeroOrgs({ clerkUserId, onTenantsLoaded, hidden }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);

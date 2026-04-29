@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
-import { T } from '../tokens';
+import { useTheme } from '../ThemeContext';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -19,6 +19,7 @@ function fmtCrypto(val) {
 }
 
 function Spinner({ size = 24 }) {
+  const { T } = useTheme();
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       style={{ animation: 'spin 0.8s linear infinite', display: 'block' }}>
@@ -30,6 +31,7 @@ function Spinner({ size = 24 }) {
 
 // ── Add key form ──────────────────────────────────────────────────────────────
 function AddKeyForm({ clerkUserId, onAdded }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [form, setForm]     = useState({ label: '', apiKey: '', secretKey: '' });
   const [loading, setLoading] = useState(false);
@@ -118,6 +120,7 @@ function AddKeyForm({ clerkUserId, onAdded }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function BinanceAssets({ clerkUserId }) {
+  const { T } = useTheme();
   const { getToken } = useAuth();
   const [data, setData]         = useState(null);
   const [loading, setLoading]   = useState(true);
