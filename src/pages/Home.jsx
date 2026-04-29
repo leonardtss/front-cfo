@@ -13,6 +13,7 @@ const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6d
 const API = import.meta.env.VITE_API_URL;
 
 function Spinner() {
+  const { T } = useTheme();
   return (
     <>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -324,6 +325,7 @@ function BankIcon({ size = 13 }) {
 }
 
 function SidebarConnectBtn({ onClick, icon, label }) {
+  const { T } = useTheme();
   return (
     <button
       onClick={onClick}

@@ -309,6 +309,7 @@ export default function BasiqAccounts({ clerkUserId }) {
 
 // ── Connect button ────────────────────────────────────────────────────────────
 function ConnectButton({ onClick, loading, hasAccounts, small }) {
+  const { T } = useTheme();
   return (
     <button
       onClick={onClick}
