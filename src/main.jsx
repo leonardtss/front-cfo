@@ -38,7 +38,7 @@ createRoot(document.getElementById('root')).render(
     >
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />} />
+          <Route path="/" element={<PublicOnlyRoute><App /></PublicOnlyRoute>} />
           <Route path="/sign-in" element={
             <PublicOnlyRoute><SignInPage /></PublicOnlyRoute>
           } />
