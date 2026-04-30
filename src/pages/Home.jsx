@@ -7,7 +7,8 @@ import XeroOrgDetail   from '../components/XeroOrgDetail';
 import XeroOrgs        from '../components/XeroOrgs';
 import BasiqAccounts   from '../components/BasiqAccounts';
 import TellerAccounts  from '../components/TellerAccounts';
-import BinanceAssets   from '../components/BinanceAssets';
+import BinanceAssets          from '../components/BinanceAssets';
+import CryptoExchangeAssets  from '../components/CryptoExchangeAssets';
 import ManualAssets       from '../components/ManualAssets';
 import ManualLiabilities  from '../components/ManualLiabilities';
 import Overview           from '../components/Overview';
@@ -177,6 +178,24 @@ export default function Home() {
               active={page === 'binance'}
               onClick={() => setPage('binance')}
             />
+            <NavItem
+              label="KuCoin"
+              icon={<CryptoIcon />}
+              active={page === 'kucoin'}
+              onClick={() => setPage('kucoin')}
+            />
+            <NavItem
+              label="Huobi (HTX)"
+              icon={<CryptoIcon />}
+              active={page === 'huobi'}
+              onClick={() => setPage('huobi')}
+            />
+            <NavItem
+              label="CoinSpot"
+              icon={<CryptoIcon />}
+              active={page === 'coinspot'}
+              onClick={() => setPage('coinspot')}
+            />
 
             {/* Assets & Liabilities */}
             <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -264,6 +283,12 @@ export default function Home() {
                 <TellerAccounts clerkUserId={user.id} />
               ) : page === 'binance' ? (
                 <BinanceAssets clerkUserId={user.id} />
+              ) : page === 'kucoin' ? (
+                <CryptoExchangeAssets exchange="kucoin" clerkUserId={user.id} />
+              ) : page === 'huobi' ? (
+                <CryptoExchangeAssets exchange="huobi" clerkUserId={user.id} />
+              ) : page === 'coinspot' ? (
+                <CryptoExchangeAssets exchange="coinspot" clerkUserId={user.id} />
               ) : page === 'assets' ? (
                 <ManualAssets clerkUserId={user.id} />
               ) : page === 'liabilities' ? (
