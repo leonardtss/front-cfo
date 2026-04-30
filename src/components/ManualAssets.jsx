@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
 import { useTheme } from '../ThemeContext';
-import ImportAssets from './ImportAssets';
+import ImportModal, { ASSET_CONFIG } from './ImportModal';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -291,9 +291,10 @@ export default function ManualAssets({ clerkUserId }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 720 }}>
 
       {showImport && (
-        <ImportAssets
+        <ImportModal
           clerkUserId={clerkUserId}
-          existingAssets={assets}
+          config={ASSET_CONFIG}
+          existing={assets}
           onImported={() => { setShowImport(false); fetchAssets(); }}
           onClose={() => setShowImport(false)}
         />
