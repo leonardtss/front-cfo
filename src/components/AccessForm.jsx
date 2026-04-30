@@ -4,10 +4,14 @@ import { T, getAccentTokens } from '../tokens';
 import { Wrap, BtnPrimary } from './shared';
 import { useMedia } from '../hooks/useMedia';
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function AccessForm() {
   const { accent } = useContext(TweaksCtx);
   const A = getAccentTokens(accent);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', tools: '' });
   const isMobile = useMedia('(max-width: 767px)');
 
@@ -66,7 +70,25 @@ export default function AccessForm() {
             </p>
           </div>
         ) : (
-          <form onSubmit={e => { e.preventDefault(); setSubmitted(true); }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <form onSubmit={async e => {
+            e.preventDefault();
+            setSubmitting(true);
+            setError(null);
+            try {
+              const r = await fetch(`${API}/api/waitlist`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(form),
+              });
+              const json = await r.json();
+              if (!r.ok) throw new Error(json.error || 'Something went wrong.');
+              setSubmitted(true);
+            } catch (err) {
+              setError(err.message);
+            } finally {
+              setSubmitting(false);
+            }
+          }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={{ display: 'block', fontFamily: T.sans, fontSize: 12, color: T.fg2, marginBottom: 7 }}>Name</label>
@@ -107,8 +129,15 @@ export default function AccessForm() {
                 onBlur={onBlur}
               />
             </div>
+            {error && (
+              <p style={{ fontFamily: T.sans, fontSize: 13, color: '#ef5350', textAlign: 'center', margin: '4px 0 0' }}>
+                {error}
+              </p>
+            )}
             <div style={{ marginTop: 10, display: 'flex', justifyContent: 'center' }}>
-              <BtnPrimary size="lg">Request early access →</BtnPrimary>
+              <BtnPrimary size="lg" disabled={submitting}>
+                {submitting ? 'Sending…' : 'Request early access →'}
+              </BtnPrimary>
             </div>
             <p style={{ textAlign: 'center', fontFamily: T.sans, fontSize: 12, color: T.fg2, marginTop: 4 }}>
               Early access. We review every application personally.

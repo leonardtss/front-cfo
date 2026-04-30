@@ -118,9 +118,9 @@ export default function Nav() {
                       Sign in
                     </button>
                   </Link>
-                  <Link to="/sign-up" style={{ textDecoration: 'none' }}>
+                  {/* <Link to="/sign-up" style={{ textDecoration: 'none' }}>
                     <BtnPrimary>Create an account</BtnPrimary>
-                  </Link>
+                  </Link> */}
                 </>
               )}
             </div>
@@ -164,11 +164,11 @@ export default function Nav() {
                   Sign in
                 </button>
               </Link>
-              <Link to="/sign-up" style={{ textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>
+              {/* <Link to="/sign-up" style={{ textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>
                 <BtnPrimary size="lg">
                   <span style={{ display: 'block', width: '100%', textAlign: 'center' }}>Create an account</span>
                 </BtnPrimary>
-              </Link>
+              </Link> */}
             </div>
           )}
         </div>

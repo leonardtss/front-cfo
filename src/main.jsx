@@ -8,7 +8,7 @@ import { ThemeProvider } from './ThemeContext.jsx'
 import App from './App.jsx'
 import Home from './pages/Home.jsx'
 import SignInPage from './pages/SignInPage.jsx'
-import SignUpPage from './pages/SignUpPage.jsx'
+// import SignUpPage from './pages/SignUpPage.jsx'
 
 function ProtectedRoute({ children }) {
   const { isSignedIn, isLoaded } = useUser()
@@ -32,9 +32,9 @@ createRoot(document.getElementById('root')).render(
     <ClerkProvider
       publishableKey={publishableKey}
       signInUrl="/sign-in"
-      signUpUrl="/sign-up"
+      // signUpUrl="/sign-up"
       signInForceRedirectUrl="/home"
-      signUpForceRedirectUrl="/home"
+      // signUpForceRedirectUrl="/home"
     >
       <BrowserRouter>
         <Routes>
@@ -42,9 +42,9 @@ createRoot(document.getElementById('root')).render(
           <Route path="/sign-in" element={
             <PublicOnlyRoute><SignInPage /></PublicOnlyRoute>
           } />
-          <Route path="/sign-up" element={
+          {/* <Route path="/sign-up" element={
             <PublicOnlyRoute><SignUpPage /></PublicOnlyRoute>
-          } />
+          } /> */}
           <Route path="/home" element={
             <ProtectedRoute><Home /></ProtectedRoute>
           } />
