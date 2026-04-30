@@ -45,7 +45,7 @@ export const LIABILITY_CONFIG = {
   endpoint:       (clerkUserId) => `${API}/api/liabilities/${clerkUserId}/bulk`,
   bodyKey:        'liabilities',
   valueField:     'balance',
-  fields:         ['name', 'balance', 'currency', 'category', 'rate', 'notes'],
+  fields:         ['name', 'balance', 'currency', 'category', 'rate', 'startDate', 'endDate', 'notes'],
   requiredFields: ['name', 'balance'],
   defaultCurrency: 'AUD',
   defaultCategory: 'mortgage',
@@ -84,8 +84,10 @@ function autoMap(headers, config) {
     else if (!map[config.valueField] && /value|amount|price|worth|balance|montant|solde|bal/.test(s)) map[config.valueField] = h;
     else if (!map.currency && /currency|ccy|devise|cur/.test(s)) map.currency = h;
     else if (!map.category && /category|type|cat|kind|classe/.test(s)) map.category = h;
-    else if (!map.rate     && /rate|taux|interest/.test(s)) map.rate = h;
-    else if (!map.notes    && /note|comment|remark|detail/.test(s)) map.notes = h;
+    else if (!map.rate      && /rate|taux|interest/.test(s))              map.rate = h;
+    else if (!map.startDate && /start|begin|debut|origination/.test(s))   map.startDate = h;
+    else if (!map.endDate   && /end|expir|maturity|echeance|fin/.test(s)) map.endDate = h;
+    else if (!map.notes     && /note|comment|remark|detail/.test(s))      map.notes = h;
   });
   return map;
 }
@@ -101,10 +103,14 @@ function mapRows(rows, mapping, config, defaultCurrency, defaultCategory) {
       const currency = mapping.currency ? String(r[mapping.currency] ?? '').toUpperCase().trim() || defaultCurrency : defaultCurrency;
       const rawCat   = mapping.category ? String(r[mapping.category] ?? '') : '';
       const category = rawCat ? config.guessCategory(rawCat) : defaultCategory;
-      const rate     = mapping.rate     ? parseFloat(r[mapping.rate]) || null : null;
-      const notes    = mapping.notes    ? String(r[mapping.notes] ?? '').trim() : '';
+      const rate      = mapping.rate      ? parseFloat(r[mapping.rate]) || null : null;
+      const startDate = mapping.startDate ? String(r[mapping.startDate] ?? '').trim() || null : null;
+      const endDate   = mapping.endDate   ? String(r[mapping.endDate]   ?? '').trim() || null : null;
+      const notes     = mapping.notes     ? String(r[mapping.notes]     ?? '').trim() : '';
       const row = { name, [vf]: value, currency, category, notes, _valid: !!name && value > 0 };
-      if (config.fields.includes('rate')) row.rate = rate;
+      if (config.fields.includes('rate'))      row.rate      = rate;
+      if (config.fields.includes('startDate')) row.startDate = startDate;
+      if (config.fields.includes('endDate'))   row.endDate   = endDate;
       return row;
     });
 }

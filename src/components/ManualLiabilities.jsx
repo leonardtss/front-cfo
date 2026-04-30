@@ -38,12 +38,14 @@ function LiabilityForm({ clerkUserId, initial, onSaved, onCancel }) {
   const { T } = useTheme();
   const { getToken } = useAuth();
   const [form, setForm] = useState({
-    name:     initial?.name     ?? '',
-    category: initial?.category ?? 'mortgage',
-    balance:  initial?.balance  ?? '',
-    currency: initial?.currency ?? 'AUD',
-    rate:     initial?.rate     ?? '',
-    notes:    initial?.notes    ?? '',
+    name:      initial?.name      ?? '',
+    category:  initial?.category  ?? 'mortgage',
+    balance:   initial?.balance   ?? '',
+    currency:  initial?.currency  ?? 'AUD',
+    rate:      initial?.rate      ?? '',
+    startDate: initial?.startDate ? initial.startDate.slice(0, 10) : '',
+    endDate:   initial?.endDate   ? initial.endDate.slice(0, 10)   : '',
+    notes:     initial?.notes     ?? '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
@@ -64,8 +66,10 @@ function LiabilityForm({ clerkUserId, initial, onSaved, onCancel }) {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          balance: parseFloat(form.balance),
-          rate: form.rate !== '' ? parseFloat(form.rate) : null,
+          balance:   parseFloat(form.balance),
+          rate:      form.rate      !== '' ? parseFloat(form.rate) : null,
+          startDate: form.startDate !== '' ? form.startDate        : null,
+          endDate:   form.endDate   !== '' ? form.endDate          : null,
         }),
       });
       const json = await r.json();
@@ -170,6 +174,28 @@ function LiabilityForm({ clerkUserId, initial, onSaved, onCancel }) {
         </div>
       </div>
 
+      {/* Start + End date */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ flex: 1 }}>
+          <label style={labelStyle}>Start date <span style={{ color: T.fg3 }}>(optional)</span></label>
+          <input
+            type="date"
+            value={form.startDate}
+            onChange={e => set('startDate', e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={labelStyle}>End date <span style={{ color: T.fg3 }}>(optional)</span></label>
+          <input
+            type="date"
+            value={form.endDate}
+            onChange={e => set('endDate', e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
       {error && <div style={{ fontFamily: T.sans, fontSize: 11, color: '#ef5350' }}>{error}</div>}
 
       <div style={{ display: 'flex', gap: 8 }}>
@@ -217,13 +243,18 @@ function LiabilityRow({ liability, onEdit, onDelete }) {
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {liability.name}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: T.sans, fontSize: 10, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {cat?.label ?? liability.category}
           </span>
           {liability.rate != null && (
             <span style={{ fontFamily: T.mono, fontSize: 10, color: '#ef5350', opacity: 0.7 }}>
               {liability.rate}%
+            </span>
+          )}
+          {liability.endDate && (
+            <span style={{ fontFamily: T.sans, fontSize: 10, color: T.fg3 }}>
+              ends {new Date(liability.endDate).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
             </span>
           )}
         </div>
