@@ -10,6 +10,7 @@ import TellerAccounts  from '../components/TellerAccounts';
 import BinanceAssets   from '../components/BinanceAssets';
 import ManualAssets       from '../components/ManualAssets';
 import ManualLiabilities  from '../components/ManualLiabilities';
+import Overview           from '../components/Overview';
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 const API = import.meta.env.VITE_API_URL;
@@ -52,7 +53,7 @@ export default function Home() {
   useEffect(() => {
     const xero  = searchParams.get('xero');
     const basiq = searchParams.get('basiq');
-    if (xero)  { setXeroStatus(xero); }
+    if (xero)  { setXeroStatus(xero); setPage('accounting'); }
     if (basiq === 'connected') { setPage('au-banks'); }
     if (xero || basiq) setSearchParams({}, { replace: true });
   }, []);
@@ -194,44 +195,46 @@ export default function Home() {
               onClick={() => setPage('liabilities')}
             />
 
-            {/* Organisations */}
-            {tenants.length > 0 && (
-              <>
-                <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  Organisations
-                </div>
-                {tenants.map((t, i) => (
-                  <NavItem
-                    key={t.tenantId}
-                    label={t.tenantName}
-                    dot={ENTITY_COLORS[i % ENTITY_COLORS.length]}
-                    active={page === t.tenantId}
-                    onClick={() => setPage(t.tenantId)}
-                  />
-                ))}
-              </>
-            )}
+            {/* Accounting */}
+            <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Accounting
+            </div>
+            <NavItem
+              label="Xero"
+              icon={<XeroLogo size={13} />}
+              active={page === 'accounting' || !!selectedTenant}
+              onClick={() => setPage('accounting')}
+            />
+            {tenants.map((t, i) => (
+              <NavItem
+                key={t.tenantId}
+                label={t.tenantName}
+                dot={ENTITY_COLORS[i % ENTITY_COLORS.length]}
+                active={page === t.tenantId}
+                onClick={() => setPage(t.tenantId)}
+              />
+            ))}
           </nav>
 
           {/* Bottom: connect buttons */}
           <div style={{ padding: '12px 16px', borderTop: `1px solid ${T.border0}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <SidebarConnectBtn
-              onClick={() => { window.location.href = `${API}/api/xero/login?clerkUserId=${user?.id}`; }}
-              icon={<XeroLogo size={14} />}
-              label="Connecter une org. Xero"
-            />
             <SidebarConnectBtn
               onClick={() => {
                 const email = user?.emailAddresses?.[0]?.emailAddress || '';
                 window.location.href = `${API}/api/basiq/connect/${user?.id}?email=${encodeURIComponent(email)}`;
               }}
               icon={<BankIcon size={13} />}
-              label="Australian bank"
+              label="Connect AU bank"
             />
             <SidebarConnectBtn
               onClick={() => setPage('us-banks')}
               icon={<BankIcon size={13} />}
-              label="US bank"
+              label="Connect US bank"
+            />
+            <SidebarConnectBtn
+              onClick={() => { window.location.href = `${API}/api/xero/login?clerkUserId=${user?.id}`; }}
+              icon={<XeroLogo size={14} />}
+              label="Connect Xero org"
             />
           </div>
         </aside>
@@ -248,10 +251,14 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Fetch tenants silently */}
-              <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} hidden />
+              {/* Silently pre-load Xero tenants for sidebar (only if accounting section visited or tenants already known) */}
+              {(page === 'accounting' || tenants.length > 0) && (
+                <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} hidden />
+              )}
 
-              {page === 'au-banks' ? (
+              {page === 'overview' ? (
+                <Overview clerkUserId={user.id} />
+              ) : page === 'au-banks' ? (
                 <BasiqAccounts clerkUserId={user.id} />
               ) : page === 'us-banks' ? (
                 <TellerAccounts clerkUserId={user.id} />
@@ -261,19 +268,20 @@ export default function Home() {
                 <ManualAssets clerkUserId={user.id} />
               ) : page === 'liabilities' ? (
                 <ManualLiabilities clerkUserId={user.id} />
-              ) : tenants.length === 0 ? (
-                /* Pas encore connecté à Xero */
-                <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
-                  <div style={{ fontFamily: T.serif, fontSize: 28, color: T.fg0, letterSpacing: '-0.8px', marginBottom: 10 }}>
-                    Connectez Xero pour commencer.
+              ) : page === 'accounting' ? (
+                tenants.length === 0 ? (
+                  <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
+                    <div style={{ fontFamily: T.serif, fontSize: 28, color: T.fg0, letterSpacing: '-0.8px', marginBottom: 10 }}>
+                      Connect Xero to get started.
+                    </div>
+                    <p style={{ fontFamily: T.sans, fontSize: 14, color: T.fg1, lineHeight: 1.65, fontWeight: 300, marginBottom: 28 }}>
+                      CFO Black aggregates your financial data in real time from all your Xero entities.
+                    </p>
+                    <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} />
                   </div>
-                  <p style={{ fontFamily: T.sans, fontSize: 14, color: T.fg1, lineHeight: 1.65, fontWeight: 300, marginBottom: 28 }}>
-                    CFO Black agrège vos données financières en temps réel depuis toutes vos entités Xero.
-                  </p>
-                  <XeroOrgs clerkUserId={user.id} onTenantsLoaded={setTenants} />
-                </div>
-              ) : page === 'overview' ? (
-                <XeroDashboard clerkUserId={user.id} tenants={tenants} />
+                ) : (
+                  <XeroDashboard clerkUserId={user.id} tenants={tenants} />
+                )
               ) : selectedTenant ? (
                 <XeroOrgDetail
                   clerkUserId={user.id}
