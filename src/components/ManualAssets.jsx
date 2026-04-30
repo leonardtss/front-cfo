@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
 import { useTheme } from '../ThemeContext';
+import ImportAssets from './ImportAssets';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -239,10 +240,11 @@ function AssetRow({ asset, onEdit, onDelete }) {
 export default function ManualAssets({ clerkUserId }) {
   const { T } = useTheme();
   const { getToken } = useAuth();
-  const [assets, setAssets]     = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing]   = useState(null); // asset being edited
+  const [assets, setAssets]       = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [showForm, setShowForm]   = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [editing, setEditing]     = useState(null);
 
   async function fetchAssets() {
     try {
@@ -288,6 +290,15 @@ export default function ManualAssets({ clerkUserId }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 720 }}>
 
+      {showImport && (
+        <ImportAssets
+          clerkUserId={clerkUserId}
+          existingAssets={assets}
+          onImported={() => { setShowImport(false); fetchAssets(); }}
+          onClose={() => setShowImport(false)}
+        />
+      )}
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
@@ -301,18 +312,33 @@ export default function ManualAssets({ clerkUserId }) {
           )}
         </div>
         {!showForm && !editing && (
-          <button onClick={() => setShowForm(true)} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            fontFamily: T.sans, fontSize: 12, color: T.fg0,
-            background: T.bg2, border: `1px solid ${T.border1}`,
-            borderRadius: 8, padding: '7px 14px', cursor: 'pointer',
-            transition: 'all 150ms',
-          }}>
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            Add asset
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => setShowImport(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: T.sans, fontSize: 12, color: T.fg2,
+              background: 'none', border: `1px solid ${T.border1}`,
+              borderRadius: 8, padding: '7px 14px', cursor: 'pointer',
+              transition: 'all 150ms',
+            }}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1v7M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M1 9v1.5a.5.5 0 00.5.5h9a.5.5 0 00.5-.5V9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+              Import
+            </button>
+            <button onClick={() => setShowForm(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: T.sans, fontSize: 12, color: T.fg0,
+              background: T.bg2, border: `1px solid ${T.border1}`,
+              borderRadius: 8, padding: '7px 14px', cursor: 'pointer',
+              transition: 'all 150ms',
+            }}>
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              Add asset
+            </button>
+          </div>
         )}
       </div>
 
