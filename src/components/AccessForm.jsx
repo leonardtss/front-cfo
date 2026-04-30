@@ -118,11 +118,11 @@ export default function AccessForm() {
             </div>
             <div>
               <label style={{ display: 'block', fontFamily: T.sans, fontSize: 12, color: T.fg2, marginBottom: 7 }}>
-                What tools are you using today?
+                What's missing from how you manage your finances today?
               </label>
               <textarea
                 style={{ ...inputStyle, resize: 'vertical', minHeight: 88 }}
-                placeholder="Kubera, Excel, Addepar, Sharesight…"
+                placeholder="No consolidated view across entities, manual reconciliation, no real-time visibility on net worth…"
                 value={form.tools}
                 onChange={set('tools')}
                 onFocus={onFocus}
