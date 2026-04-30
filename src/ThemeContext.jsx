@@ -8,9 +8,6 @@ export function ThemeProvider({ children }) {
     return localStorage.getItem('cfo-theme') !== 'light';
   });
 
-  useEffect(() => {
-    document.body.style.background = isDark ? TDark.bg0 : TLight.bg0;
-  }, [isDark]);
 
   function toggle() {
     setIsDark(d => {

@@ -30,6 +30,15 @@ export default function Home() {
   const { T, isDark, toggle } = useTheme();
   const { user }       = useUser();
   const { getToken }   = useAuth();
+
+  useEffect(() => {
+    document.body.style.background = T.bg0;
+    document.body.style.color = T.fg0;
+    return () => {
+      document.body.style.background = '';
+      document.body.style.color = '';
+    };
+  }, [isDark]);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [profile, setProfile]       = useState(null);
