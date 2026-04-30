@@ -8,7 +8,8 @@ import XeroOrgs        from '../components/XeroOrgs';
 import BasiqAccounts   from '../components/BasiqAccounts';
 import TellerAccounts  from '../components/TellerAccounts';
 import BinanceAssets   from '../components/BinanceAssets';
-import ManualAssets    from '../components/ManualAssets';
+import ManualAssets       from '../components/ManualAssets';
+import ManualLiabilities  from '../components/ManualLiabilities';
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 const API = import.meta.env.VITE_API_URL;
@@ -176,15 +177,21 @@ export default function Home() {
               onClick={() => setPage('binance')}
             />
 
-            {/* Assets */}
+            {/* Assets & Liabilities */}
             <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Assets
+              Assets & Liabilities
             </div>
             <NavItem
               label="Manual assets"
               icon={<AssetIcon />}
               active={page === 'assets'}
               onClick={() => setPage('assets')}
+            />
+            <NavItem
+              label="Liabilities"
+              icon={<LiabilityIcon />}
+              active={page === 'liabilities'}
+              onClick={() => setPage('liabilities')}
             />
 
             {/* Organisations */}
@@ -252,6 +259,8 @@ export default function Home() {
                 <BinanceAssets clerkUserId={user.id} />
               ) : page === 'assets' ? (
                 <ManualAssets clerkUserId={user.id} />
+              ) : page === 'liabilities' ? (
+                <ManualLiabilities clerkUserId={user.id} />
               ) : tenants.length === 0 ? (
                 /* Pas encore connecté à Xero */
                 <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>
@@ -331,6 +340,15 @@ function CryptoIcon({ size = 13 }) {
       <path d="M5 4.5h2.5c.8 0 1.3.4 1.3 1s-.5 1-1.3 1H5M5 6.5h2.8c.9 0 1.4.4 1.4 1.1S8.7 8.5 7.8 8.5H5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
       <line x1="6.5" y1="3.5" x2="6.5" y2="4.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
       <line x1="6.5" y1="8.5" x2="6.5" y2="9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function LiabilityIcon({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0 }}>
+      <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1" opacity="0.6"/>
+      <path d="M4.5 6.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   );
 }
