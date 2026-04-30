@@ -9,6 +9,7 @@ import BasiqAccounts   from '../components/BasiqAccounts';
 import TellerAccounts  from '../components/TellerAccounts';
 import BinanceAssets          from '../components/BinanceAssets';
 import CryptoExchangeAssets  from '../components/CryptoExchangeAssets';
+import CoinbaseAssets        from '../components/CoinbaseAssets';
 import ManualAssets       from '../components/ManualAssets';
 import ManualLiabilities  from '../components/ManualLiabilities';
 import Overview           from '../components/Overview';
@@ -52,11 +53,13 @@ export default function Home() {
 
   // Lire ?xero= et ?basiq= au retour des callbacks OAuth
   useEffect(() => {
-    const xero  = searchParams.get('xero');
-    const basiq = searchParams.get('basiq');
+    const xero     = searchParams.get('xero');
+    const basiq    = searchParams.get('basiq');
+    const coinbase = searchParams.get('coinbase');
     if (xero)  { setXeroStatus(xero); setPage('accounting'); }
-    if (basiq === 'connected') { setPage('au-banks'); }
-    if (xero || basiq) setSearchParams({}, { replace: true });
+    if (basiq    === 'connected') { setPage('au-banks'); }
+    if (coinbase === 'connected') { setPage('coinbase'); }
+    if (xero || basiq || coinbase) setSearchParams({}, { replace: true });
   }, []);
 
   // Sync profil
@@ -196,6 +199,12 @@ export default function Home() {
               active={page === 'coinspot'}
               onClick={() => setPage('coinspot')}
             />
+            <NavItem
+              label="Coinbase"
+              icon={<CryptoIcon />}
+              active={page === 'coinbase'}
+              onClick={() => setPage('coinbase')}
+            />
 
             {/* Assets & Liabilities */}
             <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -255,6 +264,11 @@ export default function Home() {
               icon={<XeroLogo size={14} />}
               label="Connect Xero org"
             />
+            <SidebarConnectBtn
+              onClick={() => { window.location.href = `${API}/api/coinbase/connect/${user?.id}`; }}
+              icon={<CoinbaseIcon size={13} />}
+              label="Connect Coinbase"
+            />
           </div>
         </aside>
 
@@ -289,6 +303,8 @@ export default function Home() {
                 <CryptoExchangeAssets exchange="huobi" clerkUserId={user.id} />
               ) : page === 'coinspot' ? (
                 <CryptoExchangeAssets exchange="coinspot" clerkUserId={user.id} />
+              ) : page === 'coinbase' ? (
+                <CoinbaseAssets clerkUserId={user.id} />
               ) : page === 'assets' ? (
                 <ManualAssets clerkUserId={user.id} />
               ) : page === 'liabilities' ? (
@@ -405,6 +421,16 @@ function BankIcon({ size = 13 }) {
       <rect x="5.5" y="5" width="2" height="5" fill="currentColor" opacity="0.5"/>
       <rect x="9" y="5" width="2" height="5" fill="currentColor" opacity="0.5"/>
       <line x1="1" y1="10" x2="12" y2="10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function CoinbaseIcon({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
+      <rect width="32" height="32" rx="16" fill="#0052FF" />
+      <circle cx="16" cy="16" r="9" fill="white" />
+      <rect x="11" y="13.5" width="10" height="5" rx="2.5" fill="#0052FF" />
     </svg>
   );
 }

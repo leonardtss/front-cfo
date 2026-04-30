@@ -31,6 +31,14 @@ const EXCHANGES = {
       { key: 'passphrase', label: 'Passphrase', secret: true },
     ],
   },
+  coinbase: {
+    name: 'Coinbase',
+    color: '#0052FF',
+    fields: [
+      { key: 'apiKey',    label: 'API Key',    secret: false },
+      { key: 'secretKey', label: 'API Secret', secret: true  },
+    ],
+  },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -67,7 +75,7 @@ function ExchangeLogo({ exchange, size = 16 }) {
       <rect width="32" height="32" rx="16" fill={cfg.color} />
       <text x="16" y="21" textAnchor="middle" fill="white"
         style={{ fontSize: exchange === 'kucoin' ? 10 : 12, fontWeight: 700, fontFamily: 'sans-serif' }}>
-        {exchange === 'coinspot' ? 'CS' : exchange === 'huobi' ? 'H' : 'KC'}
+        {exchange === 'coinspot' ? 'CS' : exchange === 'huobi' ? 'H' : exchange === 'kucoin' ? 'KC' : 'CB'}
       </text>
     </svg>
   );
