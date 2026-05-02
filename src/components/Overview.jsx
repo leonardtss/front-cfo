@@ -305,7 +305,7 @@ export default function Overview({ clerkUserId }) {
         <Section
           title="Bank accounts"
           count={data.accounts.length}
-          totalAUD={data.breakdown.usBanks.totalAUD}>
+          totalAUD={data.accounts.reduce((s, a) => s + (a.balanceAUD ?? 0), 0)}>
           {data.accounts.map(a => <AccountRow key={a.id} item={a} type="bank" />)}
         </Section>
       )}

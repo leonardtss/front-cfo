@@ -104,9 +104,12 @@ function Section({ title, children }) {
 export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
   const { T } = useTheme();
   const { getToken } = useAuth();
-  const [sample, setSample] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [sample, setSample]       = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(null);
+  const [addedIds, setAddedIds]   = useState(new Set());
+  const [toggling, setToggling]   = useState(null); // accountId being toggled
+  const [syncing, setSyncing]     = useState(false);
 
   useEffect(() => {
     if (!clerkUserId || !tenant?.tenantId) return;
@@ -126,6 +129,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
         const json = await r.json();
         if (json.error) throw new Error(json.error);
         setSample(json.data);
+        setAddedIds(new Set((json.data?.bankAccounts || []).filter(a => a.added).map(a => a.id)));
       } catch (e) {
         setError(e.message);
       } finally {
@@ -133,6 +137,47 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
       }
     })();
   }, [clerkUserId, tenant?.tenantId]);
+
+  async function toggleAccount(account) {
+    const isAdded = addedIds.has(account.id);
+    setToggling(account.id);
+    try {
+      const token = await getToken();
+      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+      if (isAdded) {
+        await fetch(`${API}/api/xero/pinned/${clerkUserId}/${account.id}`, { method: 'DELETE', headers });
+        setAddedIds(prev => { const s = new Set(prev); s.delete(account.id); return s; });
+      } else {
+        await fetch(`${API}/api/xero/pinned/${clerkUserId}`, {
+          method: 'POST', headers,
+          body: JSON.stringify({
+            tenantId: tenant.tenantId,
+            accountId: account.id,
+            name: account.name,
+            code: account.code,
+            balance: account.balance,
+            currency: account.currency,
+          }),
+        });
+        setAddedIds(prev => new Set([...prev, account.id]));
+      }
+    } finally {
+      setToggling(null);
+    }
+  }
+
+  async function syncAll() {
+    setSyncing(true);
+    try {
+      const token = await getToken();
+      await fetch(`${API}/api/xero/sync/${clerkUserId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -229,32 +274,74 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
 
       {/* Bank accounts */}
       {bankAccounts.length > 0 && (
-        <Section title="Comptes bancaires">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {bankAccounts.map(a => (
-              <div key={a.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '8px 12px', background: T.bg2, borderRadius: 7,
-                border: `1px solid ${T.border0}`,
-              }}>
-                <div>
-                  <div style={{ fontFamily: T.sans, fontSize: 12, color: T.fg0 }}>{a.name}</div>
-                  {a.code && (
-                    <div style={{ fontFamily: T.mono, fontSize: 9, color: T.fg3, marginTop: 2 }}>{a.code}</div>
-                  )}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: T.mono, fontSize: 14, color: (a.balance ?? 0) >= 0 ? T.fg0 : '#ef5350', letterSpacing: '-0.5px' }}>
-                    {fmt(a.balance ?? 0)}
-                  </div>
-                  {a.currency && (
-                    <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg3, marginTop: 1 }}>{a.currency}</div>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Comptes bancaires
+            </div>
+            {addedIds.size > 0 && (
+              <button
+                onClick={syncAll}
+                disabled={syncing}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  fontFamily: T.sans, fontSize: 10, color: T.fg2,
+                  background: 'none', border: `1px solid ${T.border1}`,
+                  borderRadius: 6, padding: '4px 9px', cursor: syncing ? 'default' : 'pointer',
+                  opacity: syncing ? 0.5 : 1,
+                }}
+              >
+                {syncing && <Spinner />}
+                {syncing ? 'Syncing…' : 'Sync balances'}
+              </button>
+            )}
           </div>
-        </Section>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {bankAccounts.map(a => {
+              const isAdded    = addedIds.has(a.id);
+              const isToggling = toggling === a.id;
+              return (
+                <div key={a.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '8px 12px', background: T.bg2, borderRadius: 7,
+                  border: `1px solid ${isAdded ? T.greenBright + '44' : T.border0}`,
+                  transition: 'border-color 200ms',
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: T.sans, fontSize: 12, color: T.fg0 }}>{a.name}</div>
+                    {a.code && (
+                      <div style={{ fontFamily: T.mono, fontSize: 9, color: T.fg3, marginTop: 2 }}>{a.code}</div>
+                    )}
+                  </div>
+                  <div style={{ textAlign: 'right', marginRight: 8 }}>
+                    <div style={{ fontFamily: T.mono, fontSize: 14, color: (a.balance ?? 0) >= 0 ? T.fg0 : '#ef5350', letterSpacing: '-0.5px' }}>
+                      {fmt(a.balance ?? 0)}
+                    </div>
+                    {a.currency && (
+                      <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg3, marginTop: 1 }}>{a.currency}</div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => toggleAccount(a)}
+                    disabled={isToggling}
+                    style={{
+                      flexShrink: 0,
+                      fontFamily: T.sans, fontSize: 10, fontWeight: 500,
+                      color: isAdded ? T.greenText : T.fg2,
+                      background: isAdded ? T.greenBright + '14' : 'none',
+                      border: `1px solid ${isAdded ? T.greenBright + '60' : T.border1}`,
+                      borderRadius: 6, padding: '4px 10px', cursor: isToggling ? 'default' : 'pointer',
+                      opacity: isToggling ? 0.5 : 1, transition: 'all 150ms',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {isAdded ? '✓ Ajouté' : '+ CFO Black'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* P&L */}
