@@ -52,6 +52,137 @@ function Btn({ T, children, onClick, disabled, highlight, danger, icon }) {
   );
 }
 
+function Overlay({ T, children }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        background: T.bg1, border: `1px solid ${T.border1}`,
+        borderRadius: 12, padding: 28, width: 480, maxWidth: '92vw',
+        maxHeight: '85vh', overflowY: 'auto',
+        boxShadow: '0 24px 48px rgba(0,0,0,0.35)',
+      }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function SaveAsModal({ T, defaultName, onConfirm, onClose }) {
+  const [name, setName] = useState(defaultName + ' (copy)');
+  return (
+    <Overlay T={T}>
+      <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg1 }}>
+        <div style={{ fontFamily: T.serif, fontSize: 18, color: T.fg0, marginBottom: 6, letterSpacing: '-0.3px' }}>
+          Save as new spreadsheet
+        </div>
+        <div style={{ fontSize: 11, color: T.fg3, marginBottom: 20 }}>
+          Creates a copy with a new name and adds it to the sidebar.
+        </div>
+        <input
+          autoFocus
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && name.trim()) onConfirm(name.trim());
+            if (e.key === 'Escape') onClose();
+          }}
+          style={{
+            width: '100%', fontFamily: T.sans, fontSize: 13, color: T.fg0,
+            background: T.bg2, border: `1px solid ${T.border1}`,
+            borderRadius: 7, padding: '9px 12px', outline: 'none',
+            boxSizing: 'border-box', marginBottom: 18,
+          }}
+        />
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Btn T={T} onClick={onClose}>Cancel</Btn>
+          <Btn T={T} onClick={() => onConfirm(name.trim())} highlight disabled={!name.trim()}>Save</Btn>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
+
+function DescribeModal({ T, headers, description: initDesc, colDescs: initCols, onSave, onClose }) {
+  const [desc, setDesc] = useState(initDesc);
+  const [cols, setCols] = useState(() => {
+    const base = Array.isArray(initCols) ? [...initCols] : [];
+    while (base.length < headers.length) base.push('');
+    return base.slice(0, headers.length);
+  });
+
+  function setCol(i, v) {
+    setCols(prev => prev.map((c, j) => j === i ? v : c));
+  }
+
+  return (
+    <Overlay T={T}>
+      <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg1 }}>
+        <div style={{ fontFamily: T.serif, fontSize: 18, color: T.fg0, marginBottom: 6, letterSpacing: '-0.3px' }}>
+          Describe this spreadsheet
+        </div>
+        <div style={{ fontSize: 11, color: T.fg3, marginBottom: 20, lineHeight: 1.6 }}>
+          These descriptions help the AI understand your data — especially useful for exotic or custom assets.
+        </div>
+
+        <label style={{ display: 'block', fontSize: 11, color: T.fg2, marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          What is this spreadsheet about?
+        </label>
+        <textarea
+          value={desc}
+          onChange={e => setDesc(e.target.value)}
+          placeholder="e.g. Portfolio of alternative investments including private equity, art, and real estate…"
+          rows={3}
+          style={{
+            width: '100%', fontFamily: T.sans, fontSize: 12, color: T.fg0,
+            background: T.bg2, border: `1px solid ${T.border1}`,
+            borderRadius: 7, padding: '9px 12px', outline: 'none',
+            boxSizing: 'border-box', resize: 'vertical', marginBottom: 22,
+            lineHeight: 1.6,
+          }}
+        />
+
+        <label style={{ display: 'block', fontSize: 11, color: T.fg2, marginBottom: 10, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Column descriptions
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>
+          {headers.map((h, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 10, alignItems: 'center' }}>
+              <span style={{
+                fontFamily: T.mono, fontSize: 11, color: T.fg2,
+                background: T.bg0, border: `1px solid ${T.border0}`,
+                borderRadius: 5, padding: '5px 8px',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {h}
+              </span>
+              <input
+                value={cols[i] ?? ''}
+                onChange={e => setCol(i, e.target.value)}
+                placeholder={`Describe "${h}"…`}
+                style={{
+                  fontFamily: T.sans, fontSize: 12, color: T.fg0,
+                  background: T.bg2, border: `1px solid ${T.border1}`,
+                  borderRadius: 6, padding: '5px 10px', outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Btn T={T} onClick={onClose}>Cancel</Btn>
+          <Btn T={T} onClick={() => onSave(desc, cols)} highlight>Save description</Btn>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
+
 export default function Spreadsheet({ clerkUserId }) {
   const { T } = useTheme();
   const { getToken } = useAuth();
@@ -64,6 +195,8 @@ export default function Spreadsheet({ clerkUserId }) {
   const [sheetName, setSheetName]     = useState('Sheet 1');
   const [headers, setHeaders]         = useState([...DEFAULT_HEADERS]);
   const [rows, setRows]               = useState(emptyRows(20, DEFAULT_HEADERS.length));
+  const [description, setDescription] = useState('');
+  const [colDescs, setColDescs]       = useState([]);
   const [dirty, setDirty]             = useState(false);
   const [saving, setSaving]           = useState(false);
 
@@ -74,10 +207,12 @@ export default function Spreadsheet({ clerkUserId }) {
   const [editingName, setEditingName] = useState(false);
   const [nameVal, setNameVal]         = useState('Sheet 1');
 
-  // Import modal
+  // Modals
   const [showImport, setShowImport]   = useState(false);
   const [importConfig, setImportConfig] = useState(null);
   const [importData, setImportData]   = useState(null);
+  const [showSaveAs, setShowSaveAs]   = useState(false);
+  const [showDescribe, setShowDescribe] = useState(false);
 
   const gridRef = useRef(null);
   const inputRef = useRef(null);
@@ -143,6 +278,8 @@ export default function Spreadsheet({ clerkUserId }) {
       setNameVal(data.name);
       setHeaders(hdrs);
       setRows(normalized);
+      setDescription(data.description ?? '');
+      setColDescs(Array.isArray(data.colDescs) ? data.colDescs : []);
       setDirty(false);
       setSel({ r: 0, c: 0 });
       setEditing(null);
@@ -157,6 +294,8 @@ export default function Spreadsheet({ clerkUserId }) {
     setNameVal('Sheet 1');
     setHeaders([...DEFAULT_HEADERS]);
     setRows(emptyRows(20, DEFAULT_HEADERS.length));
+    setDescription('');
+    setColDescs([]);
     setDirty(false);
     setSel({ r: 0, c: 0 });
     setEditing(null);
@@ -172,11 +311,36 @@ export default function Spreadsheet({ clerkUserId }) {
       const r = await fetch(url, {
         method: sheetId ? 'PUT' : 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: sheetName, headers, rows }),
+        body: JSON.stringify({ name: sheetName, headers, rows, description, colDescs }),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Save failed');
       setSheetId(data._id);
+      setDirty(false);
+      await refreshSheetList();
+      setSheetId(data._id);
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveAsNew(name) {
+    setSaving(true);
+    setShowSaveAs(false);
+    try {
+      const token = await getToken();
+      const r = await fetch(`${API}/api/spreadsheet/${clerkUserId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, headers, rows, description, colDescs }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Save failed');
+      setSheetId(data._id);
+      setSheetName(name);
+      setNameVal(name);
       setDirty(false);
       await refreshSheetList();
       setSheetId(data._id);
@@ -392,6 +556,8 @@ export default function Spreadsheet({ clerkUserId }) {
     boxSizing: 'border-box', zIndex: 10,
   };
 
+  const hasDescription = description.trim() || colDescs.some(d => d?.trim());
+
   if (loadingSheets) return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
@@ -411,6 +577,31 @@ export default function Spreadsheet({ clerkUserId }) {
           initialData={importData}
           onImported={() => setShowImport(false)}
           onClose={() => setShowImport(false)}
+        />
+      )}
+
+      {showSaveAs && (
+        <SaveAsModal
+          T={T}
+          defaultName={sheetName}
+          onConfirm={saveAsNew}
+          onClose={() => setShowSaveAs(false)}
+        />
+      )}
+
+      {showDescribe && (
+        <DescribeModal
+          T={T}
+          headers={headers}
+          description={description}
+          colDescs={colDescs}
+          onSave={(desc, cols) => {
+            setDescription(desc);
+            setColDescs(cols);
+            setShowDescribe(false);
+            mark();
+          }}
+          onClose={() => setShowDescribe(false)}
         />
       )}
 
@@ -453,6 +644,36 @@ export default function Spreadsheet({ clerkUserId }) {
         <Btn T={T} onClick={() => fileRef.current?.click()} icon="↑">Import file</Btn>
         <Btn T={T} onClick={() => openAsImport(ASSET_CONFIG)}>Save as assets</Btn>
         <Btn T={T} onClick={() => openAsImport(LIABILITY_CONFIG)}>Save as liabilities</Btn>
+
+        {/* Describe button — dot indicator when description exists */}
+        <button
+          onClick={() => setShowDescribe(true)}
+          title="Describe spreadsheet columns for AI context"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            fontFamily: T.sans, fontSize: 12,
+            color: hasDescription ? T.greenText : T.fg1,
+            background: hasDescription ? `${T.greenBright}12` : T.bg2,
+            border: `1px solid ${hasDescription ? `${T.greenBright}40` : T.border1}`,
+            borderRadius: 7, padding: '7px 13px',
+            cursor: 'pointer', transition: 'all 120ms', whiteSpace: 'nowrap',
+          }}
+        >
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" strokeWidth="1.1"/>
+            <line x1="5.5" y1="4.5" x2="5.5" y2="8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <circle cx="5.5" cy="3" r="0.6" fill="currentColor"/>
+          </svg>
+          Describe
+          {hasDescription && (
+            <span style={{
+              width: 5, height: 5, borderRadius: '50%',
+              background: T.greenBright, flexShrink: 0,
+            }} />
+          )}
+        </button>
+
+        <Btn T={T} onClick={() => setShowSaveAs(true)} disabled={saving}>Save as</Btn>
         <Btn T={T} onClick={saveSheet} disabled={saving || !dirty} highlight>
           {saving ? 'Saving…' : 'Save'}
         </Btn>
@@ -510,6 +731,7 @@ export default function Spreadsheet({ clerkUserId }) {
                   key={c}
                   onDoubleClick={() => startEdit(-1, c)}
                   style={{ ...TH, cursor: 'pointer' }}
+                  title={colDescs[c] ? `${h}: ${colDescs[c]}` : undefined}
                 >
                   {editing?.r === -1 && editing.c === c ? (
                     <input
@@ -520,7 +742,14 @@ export default function Spreadsheet({ clerkUserId }) {
                       onKeyDown={handleInputKey}
                       style={inputSt}
                     />
-                  ) : h}
+                  ) : (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {h}
+                      {colDescs[c]?.trim() && (
+                        <span style={{ width: 4, height: 4, borderRadius: '50%', background: T.greenBright, opacity: 0.7, flexShrink: 0 }} />
+                      )}
+                    </span>
+                  )}
                 </th>
               ))}
 
