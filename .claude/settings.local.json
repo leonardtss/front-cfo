@@ -13,7 +13,14 @@
       "Bash(ls /Users/leonardtorossian/cfo-black/front/Capture*)",
       "Bash(ls /Users/leonardtorossian/cfo-black/front/*.png)",
       "Bash(curl -s \"https://api.basiq.io/reference/createuser\")",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "WebSearch",
+      "WebFetch(domain:developer.xero.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_finance.yaml)",
+      "Bash(curl -s https://api.github.com/repos/XeroAPI/Xero-OpenAPI/git/trees/master?recursive=1)",
+      "Bash(curl -s \"https://api.github.com/repos/XeroAPI/Xero-OpenAPI/git/trees/master?recursive=1\")",
+      "Bash(curl -s https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-finance.yaml)",
+      "Bash(curl -s https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_accounting.yaml)"
     ]
   }
 }
