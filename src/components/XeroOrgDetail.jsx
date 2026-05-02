@@ -70,11 +70,11 @@ function HBar({ value, max, color }) {
 function StatusBadge({ status }) {
   const { T } = useTheme();
   const map = {
-    AUTHORISED: { label: 'autorisée', color: '#ffb74d' },
-    PAID:       { label: 'payée',     color: T.greenText },
-    DRAFT:      { label: 'brouillon', color: T.fg3 },
-    VOIDED:     { label: 'annulée',   color: '#e05555' },
-    DELETED:    { label: 'supprimée', color: '#e05555' },
+    AUTHORISED: { label: 'authorised', color: '#ffb74d' },
+    PAID:       { label: 'paid',       color: T.greenText },
+    DRAFT:      { label: 'draft',      color: T.fg3 },
+    VOIDED:     { label: 'voided',     color: '#e05555' },
+    DELETED:    { label: 'deleted',    color: '#e05555' },
   };
   const s = map[status] || { label: status?.toLowerCase() || '—', color: T.fg3 };
   return (
@@ -190,12 +190,12 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
   if (error === 'reauth') {
     return (
       <div style={{ textAlign: 'center', padding: '24px 0' }}>
-        <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg1, marginBottom: 12 }}>Session Xero expirée.</div>
+        <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg1, marginBottom: 12 }}>Xero session expired.</div>
         <button
           onClick={() => { window.location.href = `${API}/api/xero/login?clerkUserId=${clerkUserId}`; }}
           style={{ fontFamily: T.sans, fontSize: 13, color: T.fg0, background: T.bg2, border: `1px solid ${T.border1}`, padding: '8px 18px', borderRadius: 8, cursor: 'pointer' }}
         >
-          Reconnecter Xero
+          Reconnect Xero
         </button>
       </div>
     );
@@ -204,7 +204,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
   if (error || !sample) {
     return (
       <div style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', textAlign: 'center', padding: '24px 0' }}>
-        {error || 'Aucune donnée disponible.'}
+        {error || 'No data available.'}
       </div>
     );
   }
@@ -263,13 +263,13 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
 
       {/* KPI row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        <KPI label="Actifs totaux" value={totalAssets} />
-        <KPI label="Passifs totaux" value={totalLiabilities} color={totalLiabilities > 0 ? '#ef5350' : T.fg0} />
+        <KPI label="Total assets" value={totalAssets} />
+        <KPI label="Total liabilities" value={totalLiabilities} color={totalLiabilities > 0 ? '#ef5350' : T.fg0} />
         <KPI label="Equity" value={totalEquity} color={totalEquity >= 0 ? T.greenText : '#ef5350'} />
-        <KPI label="Cash on hand" value={cash} sub={`${bankAccounts.length} compte${bankAccounts.length !== 1 ? 's' : ''}`} />
-        <KPI label="À encaisser" value={receivables}
+        <KPI label="Cash on hand" value={cash} sub={`${bankAccounts.length} account${bankAccounts.length !== 1 ? 's' : ''}`} />
+        <KPI label="Receivables" value={receivables}
           color={receivables > 0 ? '#ffb74d' : T.fg0}
-          sub={`${summary?.invoices?.count ?? 0} facture${(summary?.invoices?.count ?? 0) !== 1 ? 's' : ''}`} />
+          sub={`${summary?.invoices?.count ?? 0} invoice${(summary?.invoices?.count ?? 0) !== 1 ? 's' : ''}`} />
       </div>
 
       {/* Bank accounts */}
@@ -277,7 +277,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
         <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Comptes bancaires
+              Bank accounts
             </div>
             {addedIds.size > 0 && (
               <button
@@ -335,7 +335,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {isAdded ? '✓ Ajouté' : '+ CFO Black'}
+                    {isAdded ? '✓ Added' : '+ CFO Black'}
                   </button>
                 </div>
               );
@@ -346,11 +346,11 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
 
       {/* P&L */}
       {(revenue > 0 || expenses > 0) && (
-        <Section title={`P&L · ${sample.period?.from?.slice(0, 7) || 'période'}`}>
+        <Section title={`P&L · ${sample.period?.from?.slice(0, 7) || 'period'}`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              { label: 'Revenus', value: revenue, color: T.greenBright },
-              { label: 'Dépenses', value: expenses, color: '#ef5350' },
+              { label: 'Revenue',  value: revenue, color: T.greenBright },
+              { label: 'Expenses', value: expenses, color: '#ef5350' },
             ].map(({ label, value, color: c }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 56, fontFamily: T.sans, fontSize: 10, color: T.fg2, textAlign: 'right', flexShrink: 0 }}>
@@ -363,7 +363,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
               </div>
             ))}
             <div style={{ borderTop: `1px solid ${T.border0}`, paddingTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontFamily: T.sans, fontSize: 11, color: T.fg1 }}>Résultat net</span>
+              <span style={{ fontFamily: T.sans, fontSize: 11, color: T.fg1 }}>Net profit</span>
               <span style={{ fontFamily: T.mono, fontSize: 15, fontWeight: 600, letterSpacing: '-0.5px', color: netProfit >= 0 ? T.greenText : '#ef5350' }}>
                 {netProfit >= 0 ? '+' : ''}{fmt(netProfit)}
               </span>
@@ -374,13 +374,13 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
 
       {/* Invoices */}
       {invoices.length > 0 && (
-        <Section title={`Factures récentes · ${summary?.invoices?.count ?? invoices.length} au total`}>
+        <Section title={`Recent invoices · ${summary?.invoices?.count ?? invoices.length} total`}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: T.sans, fontSize: 11 }}>
             <thead>
               <tr>
-                {['N°', 'Contact', 'Émise', 'Échéance', 'Montant', 'Restant', 'Statut'].map(h => (
+                {['No.', 'Contact', 'Issued', 'Due', 'Amount', 'Outstanding', 'Status'].map(h => (
                   <th key={h} style={{
-                    textAlign: h === 'Montant' || h === 'Restant' ? 'right' : 'left',
+                    textAlign: h === 'Amount' || h === 'Outstanding' ? 'right' : 'left',
                     color: T.fg2, fontWeight: 400, paddingBottom: 8, paddingRight: 10, fontSize: 10,
                   }}>{h}</th>
                 ))}
@@ -417,9 +417,9 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
           {/* Summary row */}
           <div style={{ display: 'flex', gap: 20, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.border0}` }}>
             {[
-              { label: 'total facturé', value: summary?.invoices?.total },
-              { label: 'encaissé',      value: summary?.invoices?.paid, color: T.greenText },
-              { label: 'restant dû',    value: summary?.invoices?.due,  color: '#ffb74d' },
+              { label: 'total invoiced', value: summary?.invoices?.total },
+              { label: 'collected',      value: summary?.invoices?.paid, color: T.greenText },
+              { label: 'outstanding',    value: summary?.invoices?.due,  color: '#ffb74d' },
             ].map(({ label, value, color: c }) => (
               <div key={label} style={{ fontFamily: T.sans, fontSize: 10 }}>
                 <span style={{ fontFamily: T.mono, fontWeight: 600, color: c || T.fg0, marginRight: 5 }}>{fmt(value)}</span>
@@ -432,7 +432,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
 
       {/* Bank transactions */}
       {transactions.length > 0 && (
-        <Section title={`Mouvements bancaires · ${summary?.bankTransactions?.count ?? transactions.length} au total`}>
+        <Section title={`Bank transactions · ${summary?.bankTransactions?.count ?? transactions.length} total`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {transactions.map((tx, i) => (
               <div key={tx.id || i} style={{

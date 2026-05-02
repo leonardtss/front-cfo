@@ -135,7 +135,7 @@ export default function Home() {
         }}>
           {/* Greeting */}
           <div style={{ padding: '20px 16px 14px', borderBottom: `1px solid ${T.border0}` }}>
-            <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, marginBottom: 2 }}>Bonjour,</div>
+            <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, marginBottom: 2 }}>Hello,</div>
             <div style={{ fontFamily: T.serif, fontSize: 17, color: T.fg0, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
               {firstName || '—'}
             </div>
@@ -263,7 +263,7 @@ export default function Home() {
             <>
               {xeroStatus === 'error' && (
                 <div style={{ fontFamily: T.sans, fontSize: 12, color: '#e05555', marginBottom: 16 }}>
-                  Connexion Xero échouée. Réessayez.
+                  Xero connection failed. Please try again.
                 </div>
               )}
 

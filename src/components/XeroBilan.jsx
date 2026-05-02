@@ -95,7 +95,7 @@ function TenantCard({ tenantName, data, error }) {
       background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 12, padding: '20px 24px',
     }}>
       <div style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: T.fg0, marginBottom: 6 }}>{tenantName}</div>
-      <div style={{ fontFamily: T.sans, fontSize: 12, color: '#e05555' }}>Erreur : {error}</div>
+      <div style={{ fontFamily: T.sans, fontSize: 12, color: '#e05555' }}>Error: {error}</div>
     </div>
   );
 
@@ -129,7 +129,7 @@ function TenantCard({ tenantName, data, error }) {
           background: `${T.greenBright}12`, border: `1px solid ${T.greenBright}30`,
           padding: '3px 9px', borderRadius: 99,
         }}>
-          7 jours
+          7 days
         </div>
       </div>
 
@@ -137,7 +137,7 @@ function TenantCard({ tenantName, data, error }) {
       {bankAccounts?.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-            Comptes bancaires
+            Bank accounts
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {bankAccounts.map(a => (
@@ -162,13 +162,13 @@ function TenantCard({ tenantName, data, error }) {
       {/* Activité de la semaine */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-          Activité — 7 derniers jours
+          Activity — last 7 days
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <Pill label={`Transactions bancaires (${summary.bankTransactions.count})`} value={fmt(summary.bankTransactions.totalAmount, currency)} />
-          <Pill label={`Factures (${summary.invoices.count})`} value={fmt(summary.invoices.total, currency)} />
-          <Pill label="Factures dues" value={fmt(summary.invoices.due, currency)} color={summary.invoices.due > 0 ? '#e07755' : T.fg0} />
-          <Pill label={`Paiements (${summary.payments.count})`} value={fmt(summary.payments.totalAmount, currency)} color={T.greenText} />
+          <Pill label={`Bank transactions (${summary.bankTransactions.count})`} value={fmt(summary.bankTransactions.totalAmount, currency)} />
+          <Pill label={`Invoices (${summary.invoices.count})`} value={fmt(summary.invoices.total, currency)} />
+          <Pill label="Outstanding invoices" value={fmt(summary.invoices.due, currency)} color={summary.invoices.due > 0 ? '#e07755' : T.fg0} />
+          <Pill label={`Payments (${summary.payments.count})`} value={fmt(summary.payments.totalAmount, currency)} color={T.greenText} />
         </div>
       </div>
 
@@ -176,7 +176,7 @@ function TenantCard({ tenantName, data, error }) {
       {profitAndLoss && Object.keys(profitAndLoss).length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-            Compte de résultat (période)
+            P&L statement (period)
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {Object.entries(profitAndLoss).map(([key, val]) => (
@@ -195,7 +195,7 @@ function TenantCard({ tenantName, data, error }) {
       {balanceSheet && Object.keys(balanceSheet).length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-            Bilan comptable (aujourd'hui)
+            Balance sheet (today)
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {Object.entries(balanceSheet).map(([key, val]) => (
@@ -208,28 +208,28 @@ function TenantCard({ tenantName, data, error }) {
       {/* Samples (collapsibles) */}
       <div style={{ borderTop: `1px solid ${T.border0}`, paddingTop: 12, marginTop: 4 }}>
         <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-          Données brutes (échantillon)
+          Raw data (sample)
         </div>
 
         <SampleTable
-          title="Transactions bancaires"
+          title="Bank transactions"
           rows={samples.bankTransactions}
           columns={[
             { key: 'date',      label: 'Date',      format: fmtDate },
             { key: 'contact',   label: 'Contact' },
-            { key: 'reference', label: 'Référence' },
+            { key: 'reference', label: 'Reference' },
             { key: 'type',      label: 'Type' },
-            { key: 'amount',    label: 'Montant', mono: true, format: (v, r) => fmt(v, currency) },
-            { key: 'account',   label: 'Compte' },
+            { key: 'amount',    label: 'Amount', mono: true, format: (v, r) => fmt(v, currency) },
+            { key: 'account',   label: 'Account' },
           ]}
         />
 
         <SampleTable
-          title="Factures"
+          title="Invoices"
           rows={samples.invoices}
           columns={[
             { key: 'date',      label: 'Date',     format: fmtDate },
-            { key: 'number',    label: 'N°' },
+            { key: 'number',    label: 'No.' },
             { key: 'contact',   label: 'Contact' },
             { key: 'type',      label: 'Type' },
             { key: 'status',    label: 'Statut' },
@@ -313,13 +313,13 @@ export default function XeroBilan({ clerkUserId }) {
 
   if (error) return (
     <div style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', textAlign: 'center', padding: '24px 0' }}>
-      Erreur : {error}
+      Error: {error}
     </div>
   );
 
   if (!data?.length) return (
     <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg2, textAlign: 'center', padding: '24px 0' }}>
-      Aucune organisation connectée.
+      No organization connected.
     </div>
   );
 

@@ -200,17 +200,17 @@ export default function XeroDashboard({ clerkUserId }) {
 
   if (error === 'reauth') return (
     <div style={{ textAlign: 'center', padding: '24px 0' }}>
-      <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg1, marginBottom: 12 }}>Session Xero expirée.</div>
+      <div style={{ fontFamily: T.sans, fontSize: 13, color: T.fg1, marginBottom: 12 }}>Xero session expired.</div>
       <button onClick={() => { window.location.href = `${API}/api/xero/login?clerkUserId=${clerkUserId}`; }}
         style={{ fontFamily: T.sans, fontSize: 13, color: T.fg0, background: T.bg2, border: `1px solid ${T.border1}`, padding: '8px 18px', borderRadius: 8, cursor: 'pointer' }}>
-        Reconnecter Xero
+        Reconnect Xero
       </button>
     </div>
   );
 
   if (error || !data) return (
     <div style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', textAlign: 'center', padding: '24px 0' }}>
-      {error || 'Aucune donnée disponible.'}
+      {error || 'No data available.'}
     </div>
   );
 
@@ -257,29 +257,29 @@ export default function XeroDashboard({ clerkUserId }) {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          Vue consolidée · {entities.length} entité{entities.length > 1 ? 's' : ''}
+          Consolidated view · {entities.length} {entities.length > 1 ? 'entities' : 'entity'}
         </div>
         <div style={{ fontFamily: T.mono, fontSize: 10, color: T.fg3 }}>
-          au {asOf} · période : {period.from} → {period.to}
+          as of {asOf} · period: {period.from} → {period.to}
         </div>
       </div>
 
       {/* KPI row 1 */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <KPI label="Net Worth" value={aggregated.netWorth} color={T.greenText} />
-        <KPI label="Total Actifs" value={aggregated.totalAssets} />
-        <KPI label="Total Passifs" value={aggregated.totalLiabilities} color={aggregated.totalLiabilities > 0 ? '#ef5350' : T.fg0} />
-        <KPI label="Cash on hand" value={aggregated.cash} sub={`${entities.filter(e=>e.cash>0).length} compte${entities.filter(e=>e.cash>0).length>1?'s':''}`} />
+        <KPI label="Total assets" value={aggregated.totalAssets} />
+        <KPI label="Total liabilities" value={aggregated.totalLiabilities} color={aggregated.totalLiabilities > 0 ? '#ef5350' : T.fg0} />
+        <KPI label="Cash on hand" value={aggregated.cash} sub={`${entities.filter(e=>e.cash>0).length} account${entities.filter(e=>e.cash>0).length>1?'s':''}`} />
       </div>
 
       {/* KPI row 2 */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        <KPI label="À encaisser" value={aggregated.receivables}
+        <KPI label="Receivables" value={aggregated.receivables}
           color={aggregated.receivables > 0 ? '#ffb74d' : T.fg0}
-          sub={`${entities.reduce((s,e)=>s+e.invoiceCount,0)} facture${entities.reduce((s,e)=>s+e.invoiceCount,0)>1?'s':''} en attente`} />
-        <KPI label={`Revenus (${period.from.slice(0,7)})`} value={aggregated.revenue} color={T.greenText} />
-        <KPI label="Dépenses" value={aggregated.expenses} color="#ef5350" />
-        <KPI label="Profit net" value={aggregated.netProfit}
+          sub={`${entities.reduce((s,e)=>s+e.invoiceCount,0)} invoice${entities.reduce((s,e)=>s+e.invoiceCount,0)>1?'s':''} outstanding`} />
+        <KPI label={`Revenue (${period.from.slice(0,7)})`} value={aggregated.revenue} color={T.greenText} />
+        <KPI label="Expenses" value={aggregated.expenses} color="#ef5350" />
+        <KPI label="Net profit" value={aggregated.netProfit}
           color={aggregated.netProfit >= 0 ? T.greenText : '#ef5350'} />
       </div>
 
@@ -290,7 +290,7 @@ export default function XeroDashboard({ clerkUserId }) {
           {/* Header + contrôles */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', paddingTop: 3 }}>
-              Net Worth par entité
+              Net Worth by entity
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {/* Période */}
@@ -340,7 +340,7 @@ export default function XeroDashboard({ clerkUserId }) {
           {/* Chart */}
           {chartSeries.length > 0
             ? <MultiLineChart series={chartSeries} normalize={normalize} />
-            : <div style={{ fontFamily: T.sans, fontSize: 12, color: T.fg2, textAlign: 'center', padding: '24px 0' }}>Sélectionne au moins une entité.</div>
+            : <div style={{ fontFamily: T.sans, fontSize: 12, color: T.fg2, textAlign: 'center', padding: '24px 0' }}>Select at least one entity.</div>
           }
         </div>
       )}
@@ -364,7 +364,7 @@ export default function XeroDashboard({ clerkUserId }) {
                   {fmt(donutTotal)}
                 </div>
                 <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2 }}>
-                  {usesCash ? 'cash' : 'actifs'}
+                  {usesCash ? 'cash' : 'assets'}
                 </div>
               </div>
             </div>
@@ -388,13 +388,13 @@ export default function XeroDashboard({ clerkUserId }) {
         {/* Entity table */}
         <div style={{ flex: 1, minWidth: 260 }}>
           <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
-            Détail par entité
+            Details by entity
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: T.sans, fontSize: 11 }}>
             <thead>
               <tr>
-                {['Entité','Actifs','Passifs','Equity','Cash','À enc.'].map(h => (
-                  <th key={h} style={{ textAlign: h==='Entité'?'left':'right', color: T.fg2, fontWeight: 400, paddingBottom: 6, paddingRight: h==='À enc.'?0:8 }}>
+                {['Entity','Assets','Liabilities','Equity','Cash','Recv.'].map(h => (
+                  <th key={h} style={{ textAlign: h==='Entity'?'left':'right', color: T.fg2, fontWeight: 400, paddingBottom: 6, paddingRight: h==='Recv.'?0:8 }}>
                     {h}
                   </th>
                 ))}
@@ -441,7 +441,7 @@ export default function XeroDashboard({ clerkUserId }) {
       {entities.some(e => e.revenue > 0 || e.expenses > 0) && (
         <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 22px' }}>
           <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
-            P&L — mois courant · par entité
+            P&L — current month · by entity
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {entities.filter(e => e.revenue > 0 || e.expenses > 0).map((e, i) => {
@@ -465,7 +465,7 @@ export default function XeroDashboard({ clerkUserId }) {
                     </div>
                     {/* Expenses bar */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 40, fontFamily: T.sans, fontSize: 9, color: T.fg2, textAlign: 'right' }}>dép.</div>
+                      <div style={{ width: 40, fontFamily: T.sans, fontSize: 9, color: T.fg2, textAlign: 'right' }}>exp.</div>
                       <div style={{ flex: 1, height: 6, background: T.bg2, borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{ width: `${(e.expenses/max)*100}%`, height: '100%', background: '#ef5350', borderRadius: 3 }} />
                       </div>
