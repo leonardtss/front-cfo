@@ -100,6 +100,65 @@ function Section({ title, children }) {
   );
 }
 
+// ── Balance Sheet category (collapsible) ─────────────────────────────────────
+function BSCategory({ section, accent }) {
+  const { T } = useTheme();
+  const [open, setOpen] = useState(false);
+  const items = (section.items || []).filter(it => Math.abs(it.balance) > 0.005);
+  if (!items.length && Math.abs(section.total) < 0.005) return null;
+  const negative = section.total < 0;
+  return (
+    <div style={{ borderTop: `1px solid ${T.border0}` }}>
+      <button
+        onClick={() => items.length && setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 0', background: 'none', border: 'none',
+          cursor: items.length ? 'pointer' : 'default', textAlign: 'left',
+        }}
+      >
+        <div style={{ width: 14, color: T.fg3, fontSize: 9, flexShrink: 0 }}>
+          {items.length ? (open ? '▾' : '▸') : ''}
+        </div>
+        <div style={{ width: 4, height: 14, background: accent, borderRadius: 2, flexShrink: 0 }} />
+        <div style={{ flex: 1, fontFamily: T.sans, fontSize: 12, color: T.fg0 }}>
+          {section.title}
+          {items.length > 0 && (
+            <span style={{ fontFamily: T.sans, fontSize: 10, color: T.fg3, marginLeft: 6 }}>
+              · {items.length}
+            </span>
+          )}
+        </div>
+        <div style={{
+          fontFamily: T.mono, fontSize: 13, fontWeight: 500, letterSpacing: '-0.3px',
+          color: negative ? '#ef5350' : T.fg0,
+        }}>
+          {negative ? '−' : ''}${Math.abs(section.total).toLocaleString('en-AU', { maximumFractionDigits: 0 })}
+        </div>
+      </button>
+      {open && items.length > 0 && (
+        <div style={{ paddingLeft: 32, paddingBottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {items.map((it, i) => (
+            <div key={it.accountId || i} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '4px 0', fontFamily: T.sans, fontSize: 11,
+            }}>
+              <span style={{ color: T.fg2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12 }}>
+                {it.name}
+              </span>
+              <span style={{
+                fontFamily: T.mono, color: it.balance < 0 ? '#ef5350' : T.fg1, flexShrink: 0,
+              }}>
+                {it.balance < 0 ? '−' : ''}${Math.abs(it.balance).toLocaleString('en-AU', { maximumFractionDigits: 0 })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
   const { T } = useTheme();
@@ -209,7 +268,7 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
     );
   }
 
-  const { bankAccounts = [], summary, profitAndLoss, balanceSheet, samples = {} } = sample;
+  const { bankAccounts = [], summary, profitAndLoss, balanceSheet, balanceSheetDetail, samples = {} } = sample;
 
   // ── Extraire les KPIs depuis balanceSheet / summary ───────────────────────
   const bsKeys  = Object.keys(balanceSheet || {});
@@ -217,9 +276,13 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
     const k = bsKeys.find(k => kws.some(kw => k.toLowerCase().includes(kw)));
     return k ? balanceSheet[k] : 0;
   };
-  const totalAssets      = findBS('asset');
-  const totalLiabilities = findBS('liabilit');
-  const totalEquity      = findBS('equity', 'net asset') || (totalAssets - totalLiabilities);
+  // Prefer the totals computed from the structured Balance Sheet detail,
+  // since the flat `balanceSheet` object collapses sections by name and may miss
+  // the grand totals on some Xero report layouts.
+  const totalAssets      = balanceSheetDetail?.totals?.assets      ?? findBS('asset');
+  const totalLiabilities = balanceSheetDetail?.totals?.liabilities ?? findBS('liabilit');
+  const totalEquity      = balanceSheetDetail?.totals?.equity      ?? balanceSheetDetail?.totals?.netAssets
+                          ?? findBS('equity', 'net asset') ?? (totalAssets - totalLiabilities);
   const cash             = bankAccounts.reduce((s, a) => s + (a.balance ?? 0), 0);
   const receivables      = summary?.invoices?.due ?? 0;
 
@@ -271,6 +334,82 @@ export default function XeroOrgDetail({ clerkUserId, tenant, color }) {
           color={receivables > 0 ? '#ffb74d' : T.fg0}
           sub={`${summary?.invoices?.count ?? 0} invoice${(summary?.invoices?.count ?? 0) !== 1 ? 's' : ''}`} />
       </div>
+
+      {/* Balance Sheet detail (book value) */}
+      {balanceSheetDetail && (balanceSheetDetail.assets.length > 0 || balanceSheetDetail.liabilities.length > 0) && (
+        <div style={{ background: T.bg1, border: `1px solid ${T.border0}`, borderRadius: 10, padding: '16px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+            <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Assets & Liabilities (book value)
+            </div>
+            <div style={{ fontFamily: T.sans, fontSize: 9, color: T.fg3 }}>
+              from Xero — as of {sample.period?.to}
+            </div>
+          </div>
+
+          {balanceSheetDetail.assets.length > 0 && (
+            <>
+              <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, fontWeight: 500, marginTop: 12, marginBottom: 2 }}>
+                Assets
+              </div>
+              {balanceSheetDetail.assets.map((s, i) => (
+                <BSCategory key={'a' + i} section={s} accent={T.greenBright} />
+              ))}
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '10px 0 4px 18px', borderTop: `1px solid ${T.border1}`,
+                fontFamily: T.sans, fontSize: 12, fontWeight: 500, color: T.fg0,
+              }}>
+                <span>Total assets</span>
+                <span style={{ fontFamily: T.mono }}>
+                  ${balanceSheetDetail.totals.assets.toLocaleString('en-AU', { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            </>
+          )}
+
+          {balanceSheetDetail.liabilities.length > 0 && (
+            <>
+              <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, fontWeight: 500, marginTop: 16, marginBottom: 2 }}>
+                Liabilities
+              </div>
+              {balanceSheetDetail.liabilities.map((s, i) => (
+                <BSCategory key={'l' + i} section={s} accent="#ef5350" />
+              ))}
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '10px 0 4px 18px', borderTop: `1px solid ${T.border1}`,
+                fontFamily: T.sans, fontSize: 12, fontWeight: 500, color: T.fg0,
+              }}>
+                <span>Total liabilities</span>
+                <span style={{ fontFamily: T.mono, color: '#ef5350' }}>
+                  ${balanceSheetDetail.totals.liabilities.toLocaleString('en-AU', { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            </>
+          )}
+
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '12px 0 4px 18px', marginTop: 8, borderTop: `2px solid ${T.border2}`,
+            fontFamily: T.sans, fontSize: 13, fontWeight: 600, color: T.fg0,
+          }}>
+            <span>Net assets</span>
+            <span style={{ fontFamily: T.mono, color: balanceSheetDetail.totals.netAssets >= 0 ? T.greenText : '#ef5350' }}>
+              ${balanceSheetDetail.totals.netAssets.toLocaleString('en-AU', { maximumFractionDigits: 0 })}
+            </span>
+          </div>
+
+          <div style={{
+            marginTop: 14, padding: '10px 12px',
+            background: T.bg2, borderRadius: 6,
+            fontFamily: T.sans, fontSize: 10, color: T.fg3, lineHeight: 1.5,
+          }}>
+            ⓘ Values reflect <strong>book value</strong> as recorded in Xero. Real estate and investments
+            may differ from market value. Bank balances reflect the most recent reconciliation.
+          </div>
+        </div>
+      )}
 
       {/* Bank accounts */}
       {bankAccounts.length > 0 && (

@@ -240,14 +240,14 @@ export default function XeroRaw({ clerkUserId, tenants = [] }) {
               </div>
             ))}
             <div style={{ fontFamily: T.sans, fontSize: 11, color: T.fg2 }}>
-              période : {data.period?.from} → {data.period?.to}
+              period: {data.period?.from} → {data.period?.to}
             </div>
           </div>
         )}
       </div>
 
       {error && (
-        <div style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', marginBottom: 12 }}>Erreur : {error}</div>
+        <div style={{ fontFamily: T.sans, fontSize: 13, color: '#e05555', marginBottom: 12 }}>Error: {error}</div>
       )}
 
       {/* Endpoint list */}

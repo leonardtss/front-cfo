@@ -159,7 +159,7 @@ function TenantCard({ tenantName, data, error }) {
         </div>
       )}
 
-      {/* Activité de la semaine */}
+      {/* Weekly activity */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontFamily: T.sans, fontSize: 10, color: T.fg2, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
           Activity — last 7 days
