@@ -68,7 +68,6 @@ function BreakdownBar({ breakdown, totalAUD }) {
   const { T } = useTheme();
 
   const segments = [
-    { label: 'AU Banks',      value: breakdown.auBanks?.totalAUD    ?? 0, color: '#4fc3f7' },
     { label: 'US Banks',      value: breakdown.usBanks?.totalAUD    ?? 0, color: '#7986cb' },
     { label: 'Crypto',        value: breakdown.crypto?.totalAUD     ?? 0, color: '#F0B90B' },
     { label: 'Manual assets', value: breakdown.manualAssets?.totalAUD ?? 0, color: T.greenBright },
@@ -127,8 +126,7 @@ function AccountRow({ item, type }) {
   const icon = (() => {
     if (type === 'asset') return ASSET_CATEGORIES[item.category]?.icon ?? '📦';
     if (type === 'liability') return LIABILITY_CATEGORIES[item.category]?.icon ?? '📋';
-    if (type === 'bank' && item.source === 'basiq') return '🇦🇺';
-    if (type === 'bank' && item.source === 'teller') return '🇺🇸';
+    if (type === 'bank') return '🇺🇸';
     if (type === 'crypto') return '₿';
     return '•';
   })();
@@ -307,7 +305,7 @@ export default function Overview({ clerkUserId }) {
         <Section
           title="Bank accounts"
           count={data.accounts.length}
-          totalAUD={data.breakdown.auBanks.totalAUD + data.breakdown.usBanks.totalAUD}>
+          totalAUD={data.breakdown.usBanks.totalAUD}>
           {data.accounts.map(a => <AccountRow key={a.id} item={a} type="bank" />)}
         </Section>
       )}

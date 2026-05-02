@@ -5,7 +5,6 @@ import { useTheme } from '../ThemeContext';
 import XeroDashboard   from '../components/XeroDashboard';
 import XeroOrgDetail   from '../components/XeroOrgDetail';
 import XeroOrgs        from '../components/XeroOrgs';
-import BasiqAccounts   from '../components/BasiqAccounts';
 import TellerAccounts  from '../components/TellerAccounts';
 import BinanceAssets          from '../components/BinanceAssets';
 import CryptoExchangeAssets  from '../components/CryptoExchangeAssets';
@@ -49,17 +48,15 @@ export default function Home() {
   const [loading, setLoading]       = useState(true);
   const [xeroStatus, setXeroStatus] = useState(null);
   const [tenants, setTenants]       = useState([]);
-  const [page, setPage]             = useState('overview'); // 'overview' | 'au-banks' | 'us-banks' | tenantId
+  const [page, setPage]             = useState('overview'); // 'overview' | 'us-banks' | tenantId
 
-  // Lire ?xero= et ?basiq= au retour des callbacks OAuth
+  // Lire ?xero= et ?coinbase= au retour des callbacks OAuth
   useEffect(() => {
     const xero     = searchParams.get('xero');
-    const basiq    = searchParams.get('basiq');
     const coinbase = searchParams.get('coinbase');
-    if (xero)  { setXeroStatus(xero); setPage('accounting'); }
-    if (basiq    === 'connected') { setPage('au-banks'); }
+    if (xero)     { setXeroStatus(xero); setPage('accounting'); }
     if (coinbase === 'connected') { setPage('coinbase'); }
-    if (xero || basiq || coinbase) setSearchParams({}, { replace: true });
+    if (xero || coinbase) setSearchParams({}, { replace: true });
   }, []);
 
   // Sync profil
@@ -159,12 +156,6 @@ export default function Home() {
               Banks
             </div>
             <NavItem
-              label="Australian Banks"
-              icon={<BankIcon />}
-              active={page === 'au-banks'}
-              onClick={() => setPage('au-banks')}
-            />
-            <NavItem
               label="US Banks"
               icon={<BankIcon />}
               active={page === 'us-banks'}
@@ -247,14 +238,6 @@ export default function Home() {
           {/* Bottom: connect buttons */}
           <div style={{ padding: '12px 16px', borderTop: `1px solid ${T.border0}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <SidebarConnectBtn
-              onClick={() => {
-                const email = user?.emailAddresses?.[0]?.emailAddress || '';
-                window.location.href = `${API}/api/basiq/connect/${user?.id}?email=${encodeURIComponent(email)}`;
-              }}
-              icon={<BankIcon size={13} />}
-              label="Connect AU bank"
-            />
-            <SidebarConnectBtn
               onClick={() => setPage('us-banks')}
               icon={<BankIcon size={13} />}
               label="Connect US bank"
@@ -291,8 +274,6 @@ export default function Home() {
 
               {page === 'overview' ? (
                 <Overview clerkUserId={user.id} />
-              ) : page === 'au-banks' ? (
-                <BasiqAccounts clerkUserId={user.id} />
               ) : page === 'us-banks' ? (
                 <TellerAccounts clerkUserId={user.id} />
               ) : page === 'binance' ? (
