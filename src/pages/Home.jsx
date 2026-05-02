@@ -12,6 +12,7 @@ import CoinbaseAssets        from '../components/CoinbaseAssets';
 import ManualAssets       from '../components/ManualAssets';
 import ManualLiabilities  from '../components/ManualLiabilities';
 import Overview           from '../components/Overview';
+import Spreadsheet, { SpreadsheetIcon } from '../components/Spreadsheet';
 
 const ENTITY_COLORS = ['#3ddc84','#4fc3f7','#ffb74d','#f06292','#ab47bc','#26c6da','#ff7043','#9ccc65'];
 const API = import.meta.env.VITE_API_URL;
@@ -213,6 +214,12 @@ export default function Home() {
               active={page === 'liabilities'}
               onClick={() => setPage('liabilities')}
             />
+            <NavItem
+              label="Spreadsheet"
+              icon={<SpreadsheetIcon />}
+              active={page === 'spreadsheet'}
+              onClick={() => setPage('spreadsheet')}
+            />
 
             {/* Accounting */}
             <div style={{ padding: '12px 16px 4px', fontFamily: T.sans, fontSize: 9, color: T.fg3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -290,6 +297,8 @@ export default function Home() {
                 <ManualAssets clerkUserId={user.id} />
               ) : page === 'liabilities' ? (
                 <ManualLiabilities clerkUserId={user.id} />
+              ) : page === 'spreadsheet' ? (
+                <Spreadsheet clerkUserId={user.id} />
               ) : page === 'accounting' ? (
                 tenants.length === 0 ? (
                   <div style={{ maxWidth: 440, margin: '0 auto', paddingTop: 40 }}>

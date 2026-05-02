@@ -153,15 +153,15 @@ function StepIndicator({ step }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function ImportModal({ clerkUserId, config, existing = [], onImported, onClose }) {
+export default function ImportModal({ clerkUserId, config, existing = [], onImported, onClose, initialData = null }) {
   const { T } = useTheme();
   const { getToken } = useAuth();
   const fileRef = useRef(null);
 
-  const [step, setStep]               = useState(0);
-  const [headers, setHeaders]         = useState([]);
-  const [rawRows, setRawRows]         = useState([]);
-  const [mapping, setMapping]         = useState({});
+  const [step, setStep]               = useState(initialData ? 1 : 0);
+  const [headers, setHeaders]         = useState(initialData?.headers ?? []);
+  const [rawRows, setRawRows]         = useState(initialData?.rows ?? []);
+  const [mapping, setMapping]         = useState(initialData ? autoMap(initialData.headers, config) : {});
   const [defaultCurrency, setDefaultCurrency] = useState(config.defaultCurrency);
   const [defaultCategory, setDefaultCategory] = useState(config.defaultCategory);
   const [sheetsUrl, setSheetsUrl]     = useState('');
